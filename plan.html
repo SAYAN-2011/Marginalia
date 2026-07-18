@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription Plans</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#C7C1AC;
+    color:#222;
+}
+
+header{
+    background:#0f5337;
+    color:white;
+    text-align:center;
+    padding:40px 20px;
+}
+
+header h1{
+    font-size:2.5rem;
+}
+
+header p{
+    margin-top:10px;
+    opacity:.9;
+}
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:50px auto;
+}
+
+.cards{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+}
+
+.card{
+    background:white;
+    width:300px;
+    border-radius:15px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+}
+
+.popular{
+    border:3px solid #355291;
+    position:relative;
+}
+
+.badge{
+    position:absolute;
+    top:-15px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#334772;
+    color:white;
+    padding:6px 15px;
+    border-radius:20px;
+    font-size:14px;
+}
+
+.price{
+    font-size:42px;
+    margin:20px 0;
+    color:#3dad11;
+}
+
+.price span{
+    font-size:18px;
+    color:#555;
+}
+
+ul{
+    list-style:none;
+    margin:25px 0;
+}
+
+ul li{
+    padding:10px;
+    border-bottom:1px solid #eee;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    background:#316335;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#3e7a57;
+}
+
+footer{
+    text-align:center;
+    padding:30px;
+    color:#666;
+}
+
+@media(max-width:900px){
+    .cards{
+        flex-direction:column;
+        align-items:center;
+    }
+}
+</style>
+
+</head>
+<body>
+
+<header>
+    <h1>Choose Your Plan</h1>
+    <p>Simple pricing with no hidden charges.(No TAX required)</p>
+</header>
+
+<div class="container">
+
+    <div class="cards">
+
+        <div class="card">
+            <h2>Free</h2>
+
+            <div class="price">
+                ₹0
+            </div>
+
+            <ul>
+                <li>✔ Basic Content</li>
+                <li>✔ Community Support</li>
+                <li>✔ Your content suggestions publication(*without your name)</li>
+                <li>✖ Detailed Content</li>
+                
+            </ul>
+
+            <button onclick="window.location.href='index.html'">Get Started</button>
+        </div>
+
+        <div class="card popular">
+
+            <div class="badge">
+                Most Popular
+            </div>
+
+            <h2>Pro</h2>
+
+            <div class="price">
+                ₹99<span>/content</span>
+            </div>
+
+            <ul>
+                <li>✔ Everything in Free</li>
+                <li>✔ Priority Support</li>
+                <li>✔ Premium Content</li>
+            </ul>
+
+            <button>Subscribe</button>
+        </div>
+
+        <div class="card">
+            <h2>Business</h2>
+
+            <div class="price">
+                ₹199<span>/content Suggested</span>
+            </div>
+
+            <ul>
+                <li>✔ Everything in Free</li>
+                <li>✔ Your name at the bottom of your content</li>
+                <li>✔ Priority Support</li>
+                <li>✔ Advanced Analytics</li>
+            </ul>
+
+            <button>Choose Plan</button>
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+    © 2026 Subscription Plans. All Rights Reserved.
+</footer>
+
+</body>
+</html>

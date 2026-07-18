@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Marginalia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="admin" class="admin-body">
+<div class="admin-shell">
+
+  <div class="admin-topbar">
+    <div class="wrap">
+      <a class="logo" href="admin.html">Marginalia<span class="dot">.</span> <span style="font-family: var(--mono); font-size:0.7rem; opacity:0.6; margin-left:6px;">admin</span></a>
+      <div class="admin-topbar-actions">
+        <a href="index.html">View site</a>
+        <a href="#" id="logout-btn">Log out</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <h1>Sign in</h1>
+      <p class="hint">Demo password: <strong>Marmeli2026</strong>. This is a client-side gate for demonstration only — don't use this pattern to protect real content.</p>
+      <form id="login-form">
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" autocomplete="current-password" required>
+          <div class="field-error" id="login-error"></div>
+        </div>
+        <button type="submit" class="btn btn-full">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <main class="admin-main" id="admin-main" style="display:none;">
+    <div class="wrap">
+      <div class="stat-row" id="stat-row"></div>
+
+      <div class="admin-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Entries</h2>
+              <p class="panel-sub">Edit, publish, or remove entries.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-secondary" id="new-post-btn">New entry</button>
+              <button class="btn btn-secondary" id="reset-seed-btn">Reset demo data</button>
+              <button class="btn" id="export-btn">Export JSON</button>
+            </div>
+          </div>
+          <div id="admin-post-list"></div>
+          <p class="admin-footnote">Changes save to this browser instantly. Use <strong>Export JSON</strong> to download an updated <code>posts.json</code> — replace the file in your project folder to make changes permanent for every visitor.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="form-heading">New entry</h2>
+              <p class="panel-sub">Fields marked required must be filled in.</p>
+            </div>
+          </div>
+          <form id="post-form">
+            <div class="field">
+              <label for="post-title">Title</label>
+              <input type="text" id="post-title" required>
+            </div>
+            <div class="field">
+              <label for="post-excerpt">Excerpt</label>
+              <input type="text" id="post-excerpt" required>
+            </div>
+            <div class="field">
+              <label for="post-content">Content</label>
+              <textarea id="post-content" required placeholder="Separate paragraphs with a blank line. Use **bold**, *italic*, and `code`."></textarea>
+            </div>
+            <div class="field">
+              <label for="post-image">Cover image URL <span style="text-transform:none; opacity:0.7;">(optional)</span></label>
+              <input type="url" id="post-image" placeholder="https://example.com/image.jpg">
+            </div>
+            <div class="field">
+              <label for="post-tag">Tags <span style="text-transform:none; opacity:0.7;">(comma-separated, duplicates removed automatically)</span></label>
+              <input type="text" id="post-tag" placeholder="Writing, Tools, Life&hellip;" required>
+            </div>
+            <div class="field">
+              <label for="post-date">Date</label>
+              <input type="date" id="post-date" required>
+            </div>
+            <div class="field">
+              <label for="post-status">Status</label>
+              <select id="post-status">
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn" id="submit-btn">Save entry</button>
+              <button type="button" class="btn btn-secondary" id="cancel-edit-btn" style="display:none;">Cancel edit</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div class="admin-grid" style="margin-top:32px;">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Sponsors</h2>
+              <p class="panel-sub">Fills the "Sponsored" slot on the homepage. Only one active sponsor shows at a time, picked at random.</p>
+            </div>
+            <button class="btn btn-secondary" id="new-sponsor-btn">New sponsor</button>
+          </div>
+          <div id="admin-sponsor-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="sponsor-form-heading">New sponsor</h2>
+              <p class="panel-sub">Name is required; everything else is optional.</p>
+            </div>
+          </div>
+          <form id="sponsor-form">
+            <div class="field">
+              <label for="sponsor-name">Sponsor name</label>
+              <input type="text" id="sponsor-name" required>
+            </div>
+            <div class="field">
+              <label for="sponsor-tagline">Tagline</label>
+              <input type="text" id="sponsor-tagline" placeholder="One short line about what they do">
+            </div>
+            <div class="field">
+              <label for="sponsor-image">Logo / image URL</label>
+              <input type="url" id="sponsor-image" placeholder="https://example.com/logo.jpg">
+            </div>
+            <div class="field">
+              <label for="sponsor-link">Link URL</label>
+              <input type="url" id="sponsor-link" placeholder="https://example.com">
+            </div>
+            <div class="field">
+              <label for="sponsor-status">Status</label>
+              <select id="sponsor-status">
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn" id="sponsor-submit-btn">Save sponsor</button>
+              <button type="button" class="btn btn-secondary" id="cancel-sponsor-edit-btn" style="display:none;">Cancel edit</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
