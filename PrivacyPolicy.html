@@ -1,77 +1,601 @@
 <!DOCTYPE html>
 <html lang="en">
-    # Privacy Policy
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marginalia — Privacy Policy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Caveat:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EFE7D6;
+    --paper-deep: #E6DCC6;
+    --ink: #232120;
+    --ink-soft: #55504A;
+    --rule: #C9BC9E;
+    --pencil: #8A3B32;
+    --pencil-soft: #B5726A;
+    --teal: #2E4C4A;
+    --teal-soft: #5C7C79;
+    --highlight: #E4C87B;
+  }
 
-**Effective Date:** July 19, 2026
+  *{box-sizing:border-box;}
 
-Welcome to **Marginalia**. We value your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, and protect the information you provide.
+  body{
+    margin:0;
+    background: var(--paper);
+    background-image:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.25), transparent 60%),
+      repeating-linear-gradient(180deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 3px);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+    line-height: 1.65;
+  }
 
-## 1. Information We Collect
+  .frame{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 28px 100px;
+  }
 
-When you contact us, subscribe, or purchase a plan, we may collect:
+  /* ---------- Header ---------- */
+  header.title-block{
+    text-align:center;
+    margin-bottom: 44px;
+    position: relative;
+  }
+  .stamp{
+    display:inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal);
+    border: 1px solid var(--teal-soft);
+    border-radius: 2px;
+    padding: 4px 10px;
+    transform: rotate(-1.2deg);
+    margin-bottom: 18px;
+  }
+  h1.masthead{
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  h1.masthead em{
+    font-style: italic;
+    color: var(--pencil);
+  }
+  .subtitle{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.03em;
+  }
+  .rule-full{
+    border:none;
+    border-top: 1px solid var(--rule);
+    margin: 28px auto 0;
+    max-width: 720px;
+  }
 
-* Your name
-* Your email address
-* Payment confirmation or transaction screenshot (if requested to verify a subscription)
-* Messages, suggestions, or feedback you send
-* Any other information you voluntarily provide
+  /* ---------- Bookmark ribbon nav ---------- */
+  nav.ribbon{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    justify-content:center;
+    margin: 30px 0 56px;
+    padding: 0;
+  }
+  nav.ribbon button{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    padding: 7px 12px;
+    border-radius: 3px 3px 0 0;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  nav.ribbon button:hover{
+    color: var(--pencil);
+    border-color: var(--pencil-soft);
+  }
+  nav.ribbon button.active{
+    background: var(--teal);
+    color: var(--paper);
+    border-color: var(--teal);
+  }
 
-## 2. How We Use Your Information
+  /* ---------- Layout: text + margin ---------- */
+  .leaf{
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 0 36px;
+    align-items: start;
+  }
+  @media (max-width: 860px){
+    .leaf{ grid-template-columns: 1fr; }
+    .margin-col{ display:none; }
+  }
 
-We use your information to:
+  .manuscript{
+    background: rgba(255,255,255,0.35);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 8px 40px;
+    position: relative;
+  }
 
-* Verify your subscription or purchase
-* Send you the content, resources, or benefits included in your selected plan
-* Respond to your emails and support requests
-* Consider your suggestions for future content
-* Improve our website and services
+  /* ---------- Bird ---------- */
+  #bird{
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 0;
+    left: 0;
+    transition: top 0.55s cubic-bezier(.34,1.4,.4,1), left 0.55s cubic-bezier(.34,1.4,.4,1);
+    pointer-events: none;
+    z-index: 5;
+  }
+  .bird-svg{
+    width: 100%;
+    height: 100%;
+    display:block;
+    transform-origin: center bottom;
+    animation: birdIdle 2.6s ease-in-out infinite;
+  }
+  .bird-svg.hop{
+    animation: birdHop 0.55s cubic-bezier(.34,1.4,.4,1);
+  }
+  @keyframes birdIdle{
+    0%, 100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(-2px) rotate(-1deg); }
+  }
+  @keyframes birdHop{
+    0%{ transform: translateY(0) rotate(0deg) scale(1); }
+    30%{ transform: translateY(-26px) rotate(-8deg) scale(1.04); }
+    55%{ transform: translateY(-30px) rotate(6deg) scale(1.02); }
+    80%{ transform: translateY(-4px) rotate(-3deg) scale(1); }
+    100%{ transform: translateY(0) rotate(0deg) scale(1); }
+  }
+  .wing{
+    transform-origin: 60% 55%;
+    animation: flap 0.5s ease-in-out infinite;
+  }
+  @keyframes flap{
+    0%, 100%{ transform: rotate(0deg); }
+    50%{ transform: rotate(-22deg); }
+  }
 
-## 3. Publishing Your Name
+  section.clause{
+    padding: 30px 0;
+    border-bottom: 1px dashed var(--rule);
+    position: relative;
+    scroll-margin-top: 24px;
+  }
+  section.clause:last-child{ border-bottom: none; }
 
-If your selected subscription or sponsorship plan includes public recognition, your name may be published on the Marginalia website as part of that benefit.
+  .clause-head{
+    display:flex;
+    align-items:baseline;
+    gap: 14px;
+    cursor: pointer;
+    user-select:none;
+  }
+  .clause-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--pencil);
+    min-width: 26px;
+  }
+  .clause-head h2{
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+  }
+  .chevron{
+    font-family:'JetBrains Mono', monospace;
+    color: var(--ink-soft);
+    transition: transform 0.2s ease;
+    font-size: 14px;
+  }
+  .clause.open .chevron{ transform: rotate(90deg); }
 
-We will not publish your email address, payment details, or other personal information.
+  .clause-body{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.32s ease;
+    padding-left: 40px;
+  }
+  .clause.open .clause-body{ max-height: 900px; }
+  .clause-body-inner{ padding-top: 14px; }
 
-## 4. Suggestions
+  .clause p{ margin: 0 0 12px; color: var(--ink); }
+  .clause ul{ margin: 0 0 12px; padding-left: 20px; }
+  .clause li{ margin-bottom: 6px; }
 
-If you send suggestions, ideas, or feedback, we may use them to improve Marginalia. If appropriate, we may acknowledge you by name if your subscription plan includes recognition or if you have given permission.
+  mark.dab{
+    background: var(--highlight);
+    background-image: linear-gradient(180deg, transparent 55%, var(--highlight) 55%);
+    background-color: transparent;
+    padding: 0 2px;
+  }
 
-## 5. Payment Verification
+  /* ---------- Margin annotations ---------- */
+  .margin-col{ position: relative; }
+  .note{
+    font-family: 'Caveat', cursive;
+    color: var(--pencil);
+    font-size: 1.32rem;
+    line-height: 1.28;
+    opacity: 0;
+    transform: translateX(6px) rotate(-1deg);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    padding: 4px 0 4px 14px;
+    border-left: 2px solid var(--pencil-soft);
+    margin: 30px 0;
+    max-width: 210px;
+  }
+  .note.show{ opacity: 1; transform: translateX(0) rotate(-1deg); }
+  .note .pin{
+    display:inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--teal);
+    border: 1px solid var(--teal-soft);
+    border-radius: 50%;
+    width: 16px; height:16px;
+    text-align:center;
+    line-height:14px;
+    margin-right:6px;
+    transform: translateY(-2px);
+  }
 
-To verify subscriptions, we may ask you to email a payment confirmation or transaction screenshot. This information is used only to confirm your purchase and provide the services included in your plan.
+  /* ---------- Footer / acknowledgement ---------- */
+  .ack{
+    margin-top: 60px;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+  .ack .signoff{
+    display:inline-block;
+    margin-top: 14px;
+    font-family:'Caveat', cursive;
+    font-size: 1.6rem;
+    color: var(--pencil);
+    transform: rotate(-1.5deg);
+  }
 
-## 6. Sharing of Information
+  /* ---------- Consent toggle (interactive signature) ---------- */
+  .consent-card{
+    margin: 0 auto 46px;
+    max-width: 640px;
+    background: var(--teal);
+    color: var(--paper);
+    border-radius: 4px;
+    padding: 18px 24px;
+    display:flex;
+    align-items:center;
+    gap: 16px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+  }
+  .consent-card p{
+    margin:0;
+    font-size: 14px;
+    line-height:1.5;
+    flex:1;
+  }
+  .consent-toggle{
+    position: relative;
+    width: 46px; height: 26px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    flex-shrink:0;
+  }
+  .consent-toggle::after{
+    content:'';
+    position:absolute;
+    top:3px; left:3px;
+    width:20px; height:20px;
+    border-radius:50%;
+    background: var(--paper);
+    transition: transform 0.2s ease;
+  }
+  .consent-toggle.on{ background: var(--pencil); }
+  .consent-toggle.on::after{ transform: translateX(20px); }
 
-We do not sell or rent your personal information.
+  /* Scroll-to highlight pulse */
+  @keyframes pulseHighlight{
+    0%{ background: rgba(228,200,123,0.6); }
+    100%{ background: transparent; }
+  }
+  .pulse{ animation: pulseHighlight 1.4s ease; }
+</style>
+</head>
+<body>
+<div class="frame">
 
-We may share information only:
+  <header class="title-block">
+    <span class="stamp">Reader's Copy · Annotated</span>
+    <h1 class="masthead"><em>Marginalia</em> — Privacy Policy</h1>
+    <div class="subtitle">EFFECTIVE 19 JULY 2026</div>
+    <hr class="rule-full">
+  </header>
 
-* When required by law.
-* With trusted service providers that help operate the website or process payments, if applicable.
+  <div class="consent-card">
+    <p id="consentText">Toggle this if you've read the policy — it just remembers your choice while this page is open, nothing is sent anywhere.</p>
+    <button class="consent-toggle" id="consentToggle" aria-label="Mark as read"></button>
+  </div>
 
-## 7. Data Security
+  <nav class="ribbon" id="ribbon"></nav>
 
-We take reasonable steps to protect your information from unauthorized access, loss, or misuse. However, no internet transmission or electronic storage method is completely secure.
+  <div class="leaf">
+    <div class="manuscript" id="manuscript">
+      <div id="bird" aria-hidden="true">
+        <svg class="bird-svg" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="#8A3B32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 34 C18 26, 30 22, 40 26 C46 28, 50 34, 48 38 C46 42, 38 40, 34 36" fill="#F2E7D1"/>
+            <path class="wing" d="M28 30 C24 24, 16 24, 12 30 C18 30, 22 32, 28 30 Z" fill="#EAD9BE"/>
+            <path d="M48 34 L58 30 L50 38 Z" fill="#8A3B32" stroke="none"/>
+            <circle cx="42" cy="30" r="1.4" fill="#232120" stroke="none"/>
+            <path d="M30 40 L26 48 M36 40 L36 48" />
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="margin-col" id="marginCol"></div>
+  </div>
 
-## 8. Your Rights
+  <div class="ack">
+    <div>By using Marginalia or subscribing to any plan, you acknowledge you've read this policy.</div>
+    <div class="signoff">— the Marginalia team</div>
+  </div>
 
-You may request that we:
+</div>
 
-* Update your personal information.
-* Delete your personal information where applicable.
-* Stop sending you emails.
-* Remove your published name (if applicable).
+<script>
+const clauses = [
+  {
+    title: "Information We Collect",
+    note: "Just the basics — name, email, and whatever you send us.",
+    html: `<p>When you contact us, subscribe, or purchase a plan, we may collect:</p>
+    <ul>
+      <li>Your name</li>
+      <li>Your email address</li>
+      <li>Payment confirmation or transaction screenshot <mark class="dab">(if requested to verify a subscription)</mark></li>
+      <li>Messages, suggestions, or feedback you send</li>
+      <li>Any other information you voluntarily provide</li>
+    </ul>`
+  },
+  {
+    title: "How We Use Your Information",
+    note: "Used to run the service — not sold, not shared for ads.",
+    html: `<p>We use your information to:</p>
+    <ul>
+      <li>Verify your subscription or purchase</li>
+      <li>Send you the content, resources, or benefits included in your selected plan</li>
+      <li>Respond to your emails and support requests</li>
+      <li>Consider your suggestions for future content</li>
+      <li>Improve our website and services</li>
+    </ul>`
+  },
+  {
+    title: "Publishing Your Name",
+    note: "Only your name goes public — and only if your plan says so.",
+    html: `<p>If your selected subscription or sponsorship plan includes public recognition, your name may be published on the Marginalia website as part of that benefit.</p>
+    <p><mark class="dab">We will not publish your email address, payment details, or other personal information.</mark></p>`
+  },
+  {
+    title: "Suggestions",
+    note: "Feedback helps shape Marginalia — credit only with your OK.",
+    html: `<p>If you send suggestions, ideas, or feedback, we may use them to improve Marginalia. If appropriate, we may acknowledge you by name if your subscription plan includes recognition or if you have given permission.</p>`
+  },
+  {
+    title: "Payment Verification",
+    note: "A screenshot just proves you paid — nothing more.",
+    html: `<p>To verify subscriptions, we may ask you to email a payment confirmation or transaction screenshot. This information is used only to confirm your purchase and provide the services included in your plan.</p>`
+  },
+  {
+    title: "Sharing of Information",
+    note: "No selling, no renting. Ever.",
+    html: `<p><mark class="dab">We do not sell or rent your personal information.</mark></p>
+    <p>We may share information only:</p>
+    <ul>
+      <li>When required by law</li>
+      <li>With trusted service providers that help operate the website or process payments, if applicable</li>
+    </ul>`
+  },
+  {
+    title: "Data Security",
+    note: "Reasonable care, honest caveat: nothing online is 100% safe.",
+    html: `<p>We take reasonable steps to protect your information from unauthorized access, loss, or misuse. However, no internet transmission or electronic storage method is completely secure.</p>`
+  },
+  {
+    title: "Your Rights",
+    note: "Update it, delete it, unsubscribe, or ask to be un-published.",
+    html: `<p>You may request that we:</p>
+    <ul>
+      <li>Update your personal information</li>
+      <li>Delete your personal information where applicable</li>
+      <li>Stop sending you emails</li>
+      <li>Remove your published name (if applicable)</li>
+    </ul>`
+  },
+  {
+    title: "Changes to This Privacy Policy",
+    note: "Updates get posted right here, with a new date.",
+    html: `<p>This Privacy Policy may be updated from time to time. Changes will be posted on this page with a revised effective date.</p>`
+  },
+  {
+    title: "Contact",
+    note: "Questions go to the usual Marginalia contact channels.",
+    html: `<p>If you have any questions about this Privacy Policy or your personal information, please contact us using the email address or contact page provided on the Marginalia website.</p>`
+  }
+];
 
-## 9. Changes to This Privacy Policy
+const manuscript = document.getElementById('manuscript');
+const marginCol = document.getElementById('marginCol');
+const ribbon = document.getElementById('ribbon');
 
-This Privacy Policy may be updated from time to time. Changes will be posted on this page with a revised effective date.
+clauses.forEach((c, i) => {
+  const num = String(i+1).padStart(2,'0');
+  const id = 'clause-' + (i+1);
 
-## 10. Contact
+  // Ribbon tab
+  const btn = document.createElement('button');
+  btn.textContent = num;
+  btn.title = c.title;
+  btn.addEventListener('click', () => jumpTo(id, i));
+  ribbon.appendChild(btn);
 
-If you have any questions about this Privacy Policy or your personal information, please contact us using the email address or contact page provided on the Marginalia website.
+  // Section
+  const section = document.createElement('section');
+  section.className = 'clause';
+  section.id = id;
+  section.innerHTML = `
+    <div class="clause-head" data-idx="${i}">
+      <span class="clause-num">${num}</span>
+      <h2>${c.title}</h2>
+      <span class="chevron">›</span>
+    </div>
+    <div class="clause-body"><div class="clause-body-inner">${c.html}</div></div>
+  `;
+  manuscript.appendChild(section);
 
----
+  // Margin note
+  const note = document.createElement('div');
+  note.className = 'note';
+  note.dataset.idx = i;
+  note.innerHTML = `<span class="pin">${num}</span>${c.note}`;
+  marginCol.appendChild(note);
 
-By using Marginalia or subscribing to any of our plans, you acknowledge that you have read and understood this Privacy Policy.
+  section.querySelector('.clause-head').addEventListener('click', () => toggleClause(i));
+});
 
+function toggleClause(i){
+  const section = document.getElementById('clause-' + (i+1));
+  const note = marginCol.querySelector(`.note[data-idx="${i}"]`);
+  const willOpen = !section.classList.contains('open');
+  section.classList.toggle('open');
+  if(willOpen){
+    note.classList.add('show');
+    moveBirdTo(i);
+  }
+  setActiveTab(i);
+}
+
+let birdLeft = null;
+let birdIndex = null;
+
+function moveBirdTo(i){
+  birdIndex = i;
+  const head = document.querySelector('#clause-' + (i+1) + ' .clause-head');
+  const bird = document.getElementById('bird');
+  const svg = bird.querySelector('.bird-svg');
+  if(!head || !bird) return;
+
+  const { top, left } = getHeadPos(head);
+
+  if(birdLeft !== null){
+    const direction = left < birdLeft ? -1 : 1;
+    svg.style.transform = direction < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+  }
+  birdLeft = left;
+
+  bird.style.top = top + 'px';
+  bird.style.left = left + 'px';
+
+  svg.classList.remove('hop');
+  void svg.offsetWidth;
+  svg.classList.add('hop');
+}
+
+function getHeadPos(head){
+  const manuscriptRect = manuscript.getBoundingClientRect();
+  const headRect = head.getBoundingClientRect();
+  return {
+    top: (headRect.top - manuscriptRect.top) - 8,
+    left: (headRect.left - manuscriptRect.left) + headRect.width - 46
+  };
+}
+
+// Re-settle the bird (no hop, no flip) whenever a clause above/below it
+// finishes collapsing or expanding and shifts the layout.
+function repositionBird(){
+  if(birdIndex === null) return;
+  const head = document.querySelector('#clause-' + (birdIndex+1) + ' .clause-head');
+  const bird = document.getElementById('bird');
+  if(!head || !bird) return;
+  const { top, left } = getHeadPos(head);
+  birdLeft = left;
+  bird.style.top = top + 'px';
+  bird.style.left = left + 'px';
+}
+
+document.querySelectorAll('.clause-body').forEach(el => {
+  el.addEventListener('transitionend', (e) => {
+    if(e.propertyName === 'max-height'){
+      repositionBird();
+    }
+  });
+});
+
+window.addEventListener('resize', repositionBird);
+
+function jumpTo(id, i){
+  const section = document.getElementById(id);
+  if(!section.classList.contains('open')){
+    toggleClause(i);
+  } else {
+    moveBirdTo(i);
+  }
+  section.scrollIntoView({behavior:'smooth', block:'start'});
+  section.classList.add('pulse');
+  setTimeout(()=>section.classList.remove('pulse'), 1400);
+  setActiveTab(i);
+}
+
+function setActiveTab(i){
+  [...ribbon.children].forEach((b, idx) => b.classList.toggle('active', idx === i));
+}
+
+// Reveal margin notes on scroll
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    const idx = e.target.id.split('-')[1] - 1;
+    const note = marginCol.querySelector(`.note[data-idx="${idx}"]`);
+    if(e.isIntersecting){ note.classList.add('show'); }
+  });
+}, { threshold: 0.35 });
+document.querySelectorAll('.clause').forEach(s => io.observe(s));
+
+// Open first clause by default
+toggleClause(0);
+document.getElementById('clause-1').scrollIntoView({block:'start'});
+
+// Consent toggle
+const consentToggle = document.getElementById('consentToggle');
+const consentText = document.getElementById('consentText');
+let consentOn = false;
+consentToggle.addEventListener('click', () => {
+  consentOn = !consentOn;
+  consentToggle.classList.toggle('on', consentOn);
+  consentText.textContent = consentOn
+    ? "Marked as read — thanks for going through it."
+    : "Toggle this if you've read the policy — it just remembers your choice while this page is open, nothing is sent anywhere.";
+});
+</script>
+</body>
 </html>
