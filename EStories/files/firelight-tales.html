@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firelight Tales — A Small Library for After Dark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #10111d;
+    --ink-raised: #1b1d30;
+    --ink-raised-2: #232640;
+    --ember: #e0703f;
+    --ember-bright: #f18a54;
+    --gold: #d3aa66;
+    --parchment: #f2e8d3;
+    --parchment-dim: #e4d6b8;
+    --star: #b9bcd6;
+    --star-dim: #6b6e8f;
+    --line: rgba(211,170,102,0.22);
+
+    --display: 'Fraunces', serif;
+    --body: 'Literata', serif;
+    --mono: 'Space Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--ink);
+    color: var(--star);
+    font-family: var(--body);
+    overflow-x: hidden;
+  }
+
+  ::selection{ background: var(--ember); color: var(--ink); }
+  a{ color: inherit; }
+
+  /* ambient starfield + cursor lantern, page-wide */
+  #sky{
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1.5px 1.5px at 70% 15%, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 55% 45%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1px 1px at 10% 85%, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 92% 90%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 30% 55%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 15% 12%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 65% 82%, rgba(255,255,255,0.3), transparent);
+    background-repeat: repeat;
+    background-size: 100% 100%;
+    opacity: 0.6;
+  }
+
+  #lantern{
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(480px circle at 50% 40%, rgba(224,112,63,0.10), transparent 70%);
+    transition: background 60ms linear;
+  }
+
+  header{
+    position: fixed; top:0; left:0; right:0; z-index: 50;
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 22px 5vw;
+    background: linear-gradient(to bottom, rgba(16,17,29,0.92), rgba(16,17,29,0));
+  }
+  .brand{
+    font-family: var(--display); font-weight: 500; font-size: 1.15rem;
+    letter-spacing: 0.02em; color: var(--parchment);
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand .flame{ color: var(--ember-bright); font-size:1rem; }
+  nav.top-nav{
+    display:flex; gap: 22px; font-family: var(--mono); font-size: 0.68rem;
+    letter-spacing: 0.07em; text-transform: uppercase;
+  }
+  nav.top-nav a{ text-decoration:none; color: var(--star-dim); transition: color .2s ease; white-space: nowrap; }
+  nav.top-nav a:hover{ color: var(--ember-bright); }
+
+  /* HERO */
+  .hero{
+    position: relative; z-index: 2; min-height: 100vh;
+    display:flex; flex-direction: column; align-items:center; justify-content:center;
+    text-align:center; padding: 0 6vw;
+  }
+  .hero .eyebrow{
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 22px;
+  }
+  .hero h1{
+    font-family: var(--display); font-weight: 400; font-style: italic;
+    font-size: clamp(2.4rem, 6vw, 5rem); line-height: 1.08;
+    color: var(--parchment); margin: 0 0 24px; max-width: 16ch;
+  }
+  .hero h1 em{ font-style: italic; color: var(--ember-bright); }
+  .hero p.sub{
+    max-width: 42ch; font-size: 1.05rem; line-height: 1.6;
+    color: var(--star); margin: 0 0 40px;
+  }
+  .cta{
+    font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink); background: var(--ember);
+    border: none; padding: 15px 30px; border-radius: 3px; cursor: pointer;
+    display:inline-flex; align-items:center; gap: 10px;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .cta:hover{ background: var(--ember-bright); transform: translateY(-2px); }
+  .cta:focus-visible, a:focus-visible, button:focus-visible{
+    outline: 2px solid var(--gold); outline-offset: 3px;
+  }
+
+  .scroll-hint{
+    position:absolute; bottom: 36px; font-family: var(--mono); font-size: 0.65rem;
+    letter-spacing: 0.15em; color: var(--star-dim); text-transform: uppercase;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .scroll-hint .stem{ width:1px; height: 34px; background: linear-gradient(to bottom, var(--gold), transparent); }
+
+  /* LIBRARY INTRO */
+  .library-intro{
+    position: relative; z-index: 2; max-width: 1180px; margin: 0 auto;
+    padding: 70px 6vw 10px;
+    display:flex; align-items:flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 20px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 30px;
+  }
+  .library-intro h2{
+    font-family: var(--display); font-weight: 500; font-size: 2rem;
+    color: var(--parchment); margin: 0;
+  }
+  .library-intro p{
+    font-family: var(--mono); font-size: 0.75rem; color: var(--star-dim);
+    letter-spacing: 0.03em; max-width: 34ch; margin: 0;
+  }
+  .shuffle-btn{
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.05em;
+    text-transform: uppercase; background: transparent;
+    border: 1px dashed var(--star-dim); color: var(--star-dim);
+    padding: 10px 18px; border-radius: 100px; cursor:pointer;
+    transition: all .2s ease; white-space: nowrap;
+  }
+  .shuffle-btn:hover{ border-color: var(--ember-bright); color: var(--ember-bright); }
+
+  /* SHELVES */
+  .shelves{ position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 10px 6vw 100px; }
+
+  .shelf-section{ padding: 56px 0 6px; }
+  .shelf-label{
+    display:flex; align-items: baseline; justify-content: space-between;
+    flex-wrap: wrap; gap: 14px; margin-bottom: 24px;
+  }
+  .shelf-label .name-group{ display:flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .shelf-label h3{
+    font-family: var(--display); font-weight: 500; font-style: italic;
+    font-size: 1.7rem; color: var(--parchment); margin: 0;
+  }
+  .shelf-label .shelf-desc{
+    font-size: 0.88rem; color: var(--star-dim); font-family: var(--body); font-style: italic;
+  }
+  .shelf-label .shelf-count{
+    font-family: var(--mono); font-size: 0.68rem; color: var(--star-dim); letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .shelf-row{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  @media (max-width: 900px){ .shelf-row{ grid-template-columns: repeat(2,1fr);} }
+  @media (max-width: 620px){ .shelf-row{ grid-template-columns: 1fr;} }
+
+  /* the wooden plank divider beneath each shelf */
+  .plank{
+    height: 10px; margin-top: 34px; border-radius: 2px;
+    background: linear-gradient(to bottom, var(--gold) 0%, rgba(211,170,102,0.35) 45%, rgba(211,170,102,0.08) 100%);
+    box-shadow: 0 10px 18px -6px rgba(0,0,0,0.55);
+    opacity: 0.55;
+  }
+
+  .card{
+    position: relative;
+    background: linear-gradient(155deg, var(--ink-raised), var(--ink-raised-2));
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 24px 22px 20px; cursor: pointer;
+    transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    display:flex; flex-direction: column; min-height: 210px;
+  }
+  .card:hover{
+    transform: translateY(-6px); border-color: var(--ember);
+    box-shadow: 0 20px 40px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(224,112,63,0.15);
+  }
+  .card-top{ display:flex; justify-content: space-between; align-items:center; margin-bottom: 16px; }
+  .mood-tag{ font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+  .read-time{ font-family: var(--mono); font-size: 0.63rem; color: var(--star-dim); }
+  .card h3{ font-family: var(--display); font-weight: 500; font-size: 1.3rem; color: var(--parchment); margin: 0 0 9px; line-height: 1.25; }
+  .card p.teaser{ font-size: 0.9rem; line-height: 1.55; color: var(--star); margin: 0; flex-grow: 1; }
+  .card-bottom{
+    display:flex; align-items:center; justify-content: space-between;
+    margin-top: 18px; padding-top: 15px; border-top: 1px dashed var(--line);
+  }
+  .seal{ width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--ember-bright), var(--ember) 70%); }
+  .read-link{
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--star); display:flex; align-items:center; gap:6px;
+    transition: gap .2s ease, color .2s ease;
+  }
+  .card:hover .read-link{ gap:10px; color: var(--ember-bright); }
+
+  footer{
+    position: relative; z-index: 2; text-align:center; padding: 50px 6vw 60px;
+    border-top: 1px solid var(--line); font-family: var(--mono); font-size: 0.72rem;
+    color: var(--star-dim); letter-spacing: 0.04em;
+  }
+  footer .flame{ color: var(--ember); margin-right: 6px; }
+
+  /* READING MODAL */
+  .overlay{
+    position: fixed; inset:0; z-index: 100; background: rgba(8,8,14,0.82);
+    backdrop-filter: blur(6px); display:flex; align-items:center; justify-content:center;
+    padding: 5vh 4vw; opacity:0; pointer-events:none;
+    transition: opacity .4s ease, background .4s ease;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+
+  /* each mood tints the room behind the page differently */
+  .overlay.mood-wonder{ background: rgba(23,17,38,0.86); }
+  .overlay.mood-mystery{ background: rgba(9,13,20,0.9); }
+  .overlay.mood-horror{ background: rgba(19,7,7,0.88); }
+  .overlay.mood-romance{ background: rgba(26,12,18,0.86); }
+  .overlay.mood-adventure{ background: rgba(19,15,5,0.86); }
+
+  .page{
+    --accent: var(--ember);
+    position:relative; width: min(680px, 100%); max-height: 88vh; overflow-y: auto;
+    background: var(--parchment); color: #2b2417; border-radius: 4px;
+    padding: 56px 56px 50px; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.7);
+    opacity: 0;
+  }
+  @media (max-width: 620px){ .page{ padding: 42px 26px 40px; } }
+
+  /* accent color per mood, drives drop-cap, tag, glow */
+  .page.mood-wonder{ --accent: #9b8cd9; }
+  .page.mood-mystery{ --accent: #7fa0c4; }
+  .page.mood-horror{ --accent: #c14b4b; }
+  .page.mood-romance{ --accent: #e08aa0; }
+  .page.mood-adventure{ --accent: #e0703f; }
+
+  /* default settle state once an entrance animation finishes */
+  .overlay.open .page{ opacity: 1; transform: none; }
+
+  /* distinct entrance per category — replayed by JS via reflow */
+  .overlay.open .page.mood-wonder{ animation: openWonder .7s cubic-bezier(.2,.7,.2,1) forwards; }
+  .overlay.open .page.mood-mystery{ animation: openMystery .65s ease forwards; }
+  .overlay.open .page.mood-horror{ animation: openHorror .6s steps(12,end) forwards; }
+  .overlay.open .page.mood-romance{
+    animation: openRomance .7s cubic-bezier(.2,.7,.2,1) forwards,
+               romanceGlow 3.2s ease-in-out .7s infinite alternate;
+  }
+  .overlay.open .page.mood-adventure{ animation: openAdventure .65s cubic-bezier(.25,.85,.35,1.15) forwards; }
+
+  @keyframes openWonder{
+    0%   { opacity:0; transform: translateY(26px) scale(0.93); filter: brightness(1.5) blur(3px); }
+    60%  { opacity:1; filter: brightness(1.08) blur(0); }
+    100% { opacity:1; transform: translateY(0) scale(1); filter: brightness(1) blur(0); }
+  }
+  @keyframes openMystery{
+    0%   { opacity:0; clip-path: inset(42% 42% 42% 42% round 10px); filter: blur(7px); }
+    100% { opacity:1; clip-path: inset(0% 0% 0% 0% round 4px); filter: blur(0); }
+  }
+  @keyframes openHorror{
+    0%   { opacity:0; transform: translate(0,8px); }
+    8%   { opacity:1; transform: translate(-5px,0); }
+    16%  { opacity:0.3; transform: translate(4px,0); }
+    24%  { opacity:1;  transform: translate(-2px,0); }
+    36%  { opacity:0.5; }
+    44%  { opacity:1; }
+    58%  { opacity:0.65; }
+    70%  { opacity:1; transform: translate(1px,0); }
+    100% { opacity:1; transform: translate(0,0); }
+  }
+  @keyframes openRomance{
+    0%   { opacity:0; transform: scaleY(0.6) translateY(14px); transform-origin: top center; }
+    75%  { opacity:1; transform: scaleY(1.02) translateY(0); }
+    100% { opacity:1; transform: scaleY(1) translateY(0); }
+  }
+  @keyframes romanceGlow{
+    from{ box-shadow: 0 40px 80px -20px rgba(0,0,0,0.7), 0 0 0px rgba(224,138,160,0); }
+    to  { box-shadow: 0 40px 80px -20px rgba(0,0,0,0.7), 0 0 46px rgba(224,138,160,0.28); }
+  }
+  @keyframes openAdventure{
+    0%   { opacity:0; transform: translateX(-70px) rotate(-7deg) scale(0.95); }
+    70%  { opacity:1; transform: translateX(8px) rotate(1deg) scale(1.01); }
+    100% { opacity:1; transform: translateX(0) rotate(0deg) scale(1); }
+  }
+
+  /* wonder sparks */
+  .spark{
+    position:absolute; width:5px; height:5px; border-radius:50%;
+    background: var(--accent, #9b8cd9); pointer-events:none;
+    box-shadow: 0 0 8px 2px var(--accent, #9b8cd9);
+    animation: twinkle 1.8s ease-in-out infinite;
+    opacity:0;
+  }
+  @keyframes twinkle{
+    0%, 100%{ opacity:0; transform: scale(0.6); }
+    50%{ opacity:0.9; transform: scale(1.15); }
+  }
+
+  /* wandering mood icons that drift through the page as you scroll */
+  .ghost{
+    position:absolute; width: 54px; opacity:0; pointer-events:none;
+    filter: drop-shadow(0 0 12px var(--accent, rgba(193,75,75,0.35)));
+    transform: scale(0.35) translateY(10px);
+    z-index: 3;
+  }
+  .ghost svg{ display:block; width:100%; height:auto; }
+  .ghost.appear{
+    animation: ghostAppear .55s ease forwards, ghostFloat 3.2s ease-in-out .55s infinite alternate;
+  }
+  .ghost.dissolve{
+    transition: transform .55s cubic-bezier(.3,.6,.3,1), opacity .5s ease, filter .5s ease;
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0.1) rotate(20deg);
+    opacity: 0;
+    filter: blur(6px) drop-shadow(0 0 0 rgba(193,75,75,0));
+  }
+  @keyframes ghostAppear{
+    from{ opacity:0; transform: translateX(var(--enter-x, 0px)) scale(0.4) translateY(10px); }
+    to  { opacity:0.92; transform: translateX(0) scale(1) translateY(0); }
+  }
+  @keyframes ghostFloat{
+    from{ transform: translateY(0) rotate(-1deg); }
+    to  { transform: translateY(-10px) rotate(1deg); }
+  }
+
+  /* the ghost that leaps out of the close button and fills the screen */
+  .jump-ghost{
+    position: fixed; z-index: 200; pointer-events:none; opacity:0;
+    border-radius: 4px; overflow: visible;
+  }
+  .jump-ghost svg{ width:100%; height:100%; display:block; filter: drop-shadow(0 0 60px rgba(193,75,75,0.55)); }
+
+  .page-controls{
+    position: sticky; top: -56px; display:flex; justify-content: space-between; align-items:center; margin-bottom: 8px;
+  }
+  .close-btn{
+    background: transparent; border: 1px solid rgba(43,36,23,0.25); color: #2b2417;
+    width: 34px; height: 34px; border-radius: 50%; font-size: 1.1rem; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background .2s ease;
+  }
+  .close-btn:hover{ background: rgba(43,36,23,0.08); }
+  .font-controls{ display:flex; gap: 6px; font-family: var(--mono); }
+  .font-controls button{
+    background: transparent; border: 1px solid rgba(43,36,23,0.25); color: #2b2417;
+    width: 30px; height: 30px; border-radius: 50%; cursor:pointer; font-size: 0.8rem;
+  }
+  .font-controls button:hover{ background: rgba(43,36,23,0.08); }
+
+  .page .mood-tag2{ font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform:uppercase; color: var(--accent); display:block; margin: 26px 0 6px; transition: color .3s ease; }
+  .page h2{ font-family: var(--display); font-style: italic; font-weight: 500; font-size: 2rem; margin: 0 0 6px; line-height: 1.15; }
+  .page .meta{ font-family: var(--mono); font-size: 0.68rem; color: rgba(43,36,23,0.55); margin-bottom: 30px; }
+  .page .story-body{ font-family: var(--body); font-size: 1.08rem; line-height: 1.85; }
+  .page .story-body p{ margin: 0 0 1.2em; }
+  .page .story-body p:first-of-type::first-letter{
+    font-family: var(--display); font-size: 3.4em; float:left; line-height: 0.8;
+    padding: 0.08em 0.1em 0 0; color: var(--accent); font-weight: 600;
+  }
+  .story-end{ margin-top: 30px; text-align:center; color: rgba(43,36,23,0.4); font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.3em; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="lantern"></div>
+
+<header>
+  <div class="brand"><span class="flame">🕯</span> Firelight Tales</div>
+  <nav class="top-nav">
+    <a href="#shelf-wonder">Wonder</a>
+    <a href="#shelf-mystery">Mystery</a>
+    <a href="#shelf-horror">Horror</a>
+    <a href="#shelf-romance">Romance</a>
+    <a href="#shelf-adventure">Adventure</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">A small library, open after dark</div>
+  <h1>Stories are best told <em>after dark.</em></h1>
+  <p class="sub">Fifteen short tales, sorted onto five shelves by the mood they leave behind — a few minutes each, for whenever the world gets quiet enough to listen.</p>
+  <button class="cta" onclick="document.getElementById('library').scrollIntoView()">Start reading ↓</button>
+  <div class="scroll-hint"><span>the shelves</span><span class="stem"></span></div>
+</section>
+
+<div class="library-intro" id="library">
+  <h2>The Shelves</h2>
+  <p>Five moods, three tales each. Pick a shelf, or let chance pick for you.</p>
+  <button class="shuffle-btn" id="shuffle">🎲 Surprise me</button>
+</div>
+
+<section class="shelves" id="shelves"></section>
+
+<footer id="about">
+  <span class="flame">🕯</span> Fifteen tales, written for reading in the dark. Firelight Tales, 2026.
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="page" id="page">
+    <div class="page-controls">
+      <button class="close-btn" id="closeBtn" aria-label="Close">✕</button>
+      <div class="font-controls">
+        <button id="soundDown" aria-label="Decrease volume" style="display:none;">−</button>
+        <button id="soundToggle" aria-label="Toggle sound" style="display:none;">🔊</button>
+        <button id="soundUp" aria-label="Increase volume" style="display:none;">+</button>
+        <button id="fontDown" aria-label="Decrease text size">A−</button>
+        <button id="fontUp" aria-label="Increase text size">A+</button>
+      </div>
+    </div>
+    <span class="mood-tag2" id="modalMood"></span>
+    <h2 id="modalTitle"></h2>
+    <div class="meta" id="modalMeta"></div>
+    <div class="story-body" id="modalBody"></div>
+    <div class="story-end">· · ·</div>
+  </div>
+</div>
+
+<script>
+const shelves = [
+  {
+    mood: "wonder",
+    label: "Wonder",
+    desc: "Small miracles, patiently explained.",
+    stories: [
+      {
+        title: "The Weight of Water",
+        time: "5 min",
+        teaser: "A lighthouse keeper's daughter learns to read the tide the way other children read books — and finds a message in it meant only for her.",
+        body: [
+          "Mira had grown up counting waves the way other children counted sheep. Her father kept the light on Innish Point, and she kept everything else: the log book, the weather, the hours between his rounds up the spiral stair. By nine she could tell a storm swell from a wind chop with her eyes shut, just from the rhythm of it against the rocks.",
+          "It was in her thirteenth winter that the sea began to write to her. Not in words — nothing so simple. In pauses. A long wave, then a short one, then two long ones, over and over, on nights when the water should have been random as breathing. She timed it with her father's pocket watch until her hands went numb, and when she finally wrote the pattern down as dots and dashes, it spelled a single word, over and over, patient as a tide: LISTEN.",
+          "She didn't tell her father. Some things, she felt, were addressed to her specifically, the way a letter has one name on the envelope. So she sat on the rocks each evening with her knees pulled to her chest and she listened, and the sea, having gotten her attention, began to tell her other things — where the fish had gone, which nights to keep the small boats in, and once, three days early, that a ship was coming that did not know these waters at all.",
+          "Her father never learned why his daughter began waking him at odd hours, insisting he light the second lamp, the one they never used except in the worst weather. He only noticed, over the years, that the point never lost a boat on her watch, and that she never once explained herself further than: the water asked me to."
+        ]
+      },
+      {
+        title: "The Girl Who Borrowed Colors",
+        time: "4 min",
+        teaser: "In a village where everyone is born seeing only grey, one girl finds she can lend her neighbors an hour of color at a time.",
+        body: [
+          "Nobody in Aldwick saw color, and nobody minded very much, since a world entirely in grey is still a whole world, full of shape and shadow and the particular silver of rain. Ren had grown up like everyone else, until her eleventh birthday, when she woke to find the inside of her own eyelids full of a deep, ringing red, and no one to explain it to.",
+          "She discovered the lending by accident, holding her cousin's hand during a thunderstorm and feeling the color pour out of her like heat leaving a stove. Her cousin gasped and said the lightning had gone gold at the edges, just for a second, and then it was grey again, and Ren understood she had given something away and gotten it back empty.",
+          "She was careful with it after that, the way you're careful with a candle in a dry house. She lent the butcher an hour of green so he could see his own garden properly, once, before he died. She lent the schoolteacher blue, for the sky, on the day her husband left. She never lent herself more than a few minutes at a time, because giving it away always emptied her a little longer than she expected.",
+          "By the time she was old and mostly grey herself, worn thin from decades of lending, the whole village had seen, briefly, in patches, most of what color was for. None of them could describe it afterward in words that meant anything. They only agreed that Ren's hands were always a little warm, and that they missed her, badly, the winter she finally ran out."
+        ]
+      },
+      {
+        title: "Grandmother's Garden of Time",
+        time: "6 min",
+        teaser: "Every plant in the old woman's garden blooms on a different day than the calendar says — and each bloom seems to know something before it happens.",
+        body: [
+          "The garden behind Nonna Elsa's house never kept the seasons properly, a fact the neighbors attributed to good soil and better luck. The roses bloomed in November. The tulips came up under snow and did not seem to mind it. Elsa never explained this to anyone, mostly because no one ever thought to ask a ninety-year-old woman why her garden was strange, assuming instead that it was simply old, like her.",
+          "Her granddaughter Pia noticed the true pattern only the summer she turned sixteen: the garden did not bloom out of season. It bloomed exactly one week before something worth remembering happened. The peonies came up early the week before her parents announced they were moving. The night-blooming jasmine opened, inexplicably, in broad daylight, the week before her grandfather's photograph came down off the mantel because Elsa finally felt ready to put it away.",
+          "Pia asked, eventually, straight out, whether Elsa had planted the garden this way on purpose. Elsa laughed for a long time at that, the kind of laugh that has a little grief folded into it, and said she had planted an ordinary garden forty years ago, and it had simply started doing this on its own sometime after her husband died, as if the earth itself had decided someone in the family ought to get a week's warning about the things that mattered.",
+          "She told Pia to keep the garden after she was gone, and to trust it, and not to go looking too hard for reasons. Pia has kept it eleven years now. She has learned not to ask the roses questions. She only checks them each morning, the way you'd check a barometer, and packs accordingly."
+        ]
+      }
+    ]
+  },
+  {
+    mood: "mystery",
+    label: "Mystery",
+    desc: "Somebody knows more than they're saying.",
+    stories: [
+      {
+        title: "The Clockmaker's Debt",
+        time: "6 min",
+        teaser: "Every clock in town runs four minutes fast — except the one clockmaker who died owing everyone an explanation.",
+        body: [
+          "It was Inspector Rill who first noticed it, mostly by accident: the church bell struck noon four minutes before the bakery's ovens finished, and the bakery's ovens finished four minutes before the trains, which never ran early, and yet somehow did. She checked her own watch against all three and found it agreed with none of them, and being the kind of person who could not leave a discrepancy alone, she began to ask around.",
+          "The town's clocks, it turned out, had all been serviced within the last year by the same man — old Bertrand Voss, who had died in his workshop that spring with his tools laid out in a neat row and no note of any kind. Every clock he'd touched now ran precisely four minutes ahead of true time. Every clock. The ones he hadn't touched kept perfect time, same as always.",
+          "Rill went through his ledgers and found nothing sinister, only decades of small repairs, fair prices, a life spent on other people's time rather than his own. It was his apprentice, a quiet boy named Ansel, who finally told her what she hadn't asked directly: that four minutes was exactly how long it had taken, by Bertrand's own count, for the fire brigade to reach his sister's house the year it burned, forty years before, four minutes too late for anyone inside.",
+          "He had spent the rest of his life, apparently, trying to buy the town back those four minutes, one clock at a time, quietly, without asking anyone's permission or explaining himself even once. Rill closed the file without correcting a single clock. Some debts, she decided, were meant to be paid exactly the way they'd been offered — and it was not her place to make the town run late again."
+        ]
+      },
+      {
+        title: "The Uninvited Guestbook",
+        time: "5 min",
+        teaser: "A bed-and-breakfast guestbook has an entry for tonight, written in handwriting no guest recognizes, dated tomorrow.",
+        body: [
+          "The Hollis Inn had kept a guestbook since 1962, a fat leather thing by the check-in desk that Nadia paged through most nights out of boredom more than curiosity. It was on a slow Tuesday in March that she found the entry for the following evening, in loose, looping handwriting she didn't recognize, signed only 'a friend of the house,' describing a dinner that hadn't happened yet in detail that made her skin prickle.",
+          "She assumed a joke, a guest with too much time and a strange sense of humor, until the next evening unfolded exactly as written — down to a spilled glass of wine at table four and a heated argument about directions between a young couple who arrived, as predicted, forty minutes late. Nadia tore the page out that night, certain that removing it would unmake whatever it had described.",
+          "A new entry appeared two days later in the same hand, for the following Thursday, as if nothing had been torn out at all. Nadia began keeping the pages instead of destroying them, filing them in a drawer, and comparing them against what actually happened, and found they were never wrong, only ever a day ahead, written by someone who had apparently never once been seen entering or leaving the inn.",
+          "She still works the desk at Hollis Inn. She has stopped trying to catch the guest in the act, and started, instead, quietly rearranging the dinner reservations to avoid the worst entries when she can — a small, private editing of tomorrow, which she has never told a soul about, least of all the inn's actual owners."
+        ]
+      },
+      {
+        title: "Three Doors Down",
+        time: "6 min",
+        teaser: "A woman keeps receiving her neighbor's mail — for a neighbor who, according to every record, has never lived there.",
+        body: [
+          "The letters began arriving for a Mr. Aubrey Finch, three doors down from Petra's building, care of her own address, which struck her as an easy postal error until she checked the building records and found no Aubrey Finch had ever been registered at either address, not now, not in the twenty years the building had stood.",
+          "She might have simply returned the letters to sender, except that none of them had a return address, only a postmark from a town she couldn't find on any map, and a habit of arriving exactly on the days she was thinking, for no reason she could name, about a man she had never met. She started, against her better judgment, opening them.",
+          "They were ordinary letters — a cousin's wedding update, a complaint about a landlord, a recipe for a lemon cake — addressed to a life that seemed to almost, but not quite, overlap with her own street, her own weather, her own small complaints. She began writing back, care of the same nonexistent return address, mostly to see what would happen, and mostly because Aubrey Finch's life, whoever he was, sounded lonelier than hers, and it seemed unkind to leave a letter unanswered.",
+          "She has received forty-one letters now and sent thirty-eight replies. She has stopped trying to explain it to anyone, including herself, and has instead simply made a little room in her week for Aubrey Finch, three doors down, in whatever town or year or reality he is actually writing from, and finds she does not much want the mystery solved, only kept."
+        ]
+      }
+    ]
+  },
+  {
+    mood: "horror",
+    label: "Horror",
+    desc: "Best read with the lights still on.",
+    stories: [
+      {
+        title: "Static",
+        time: "6 min",
+        teaser: "The radio in the basement hasn't worked in years. Lately, it's been trying very hard to fix that.",
+        body: [
+          "The radio had belonged to Dana's grandfather, a squat brown Zenith with a cracked dial, and it had not made a sound since before she was born. She kept it in the basement because it was too heavy to move twice and too ugly to put upstairs, and for four years it sat by the water heater doing nothing at all, which was exactly what she expected of it.",
+          "Then, in October, it began to hum. Not loudly — a thread of static so faint she first mistook it for the furnace. She unplugged it. The humming continued. She took the batteries out, though it had never run on batteries, and the humming got, if anything, a little clearer, like someone in another room turning down their own noise to hear her better.",
+          "By the second week the static had shape to it. Not quite words. The rise and fall of a sentence with the words sanded off, the way you can tell someone is asking a question through a wall without hearing what it is. She stopped going downstairs to do laundry. She told herself this was reasonable, the way you tell yourself lots of things are reasonable at eleven at night alone in a house that used to belong to somebody else.",
+          "On the fifteenth night the static resolved, all at once, into a single clear sentence, spoken in a voice she almost recognized: 'You've gotten so tall.' She stood very still at the top of the basement stairs for a long time. Then she went down, because it had, after all these years, finally said something to her instead of just at her, and some part of her — the part that still missed him — wanted very badly to answer."
+        ]
+      },
+      {
+        title: "The Mirror Keeps the Change",
+        time: "5 min",
+        teaser: "The antique mirror in the hallway gives back your reflection a half-second late. That half-second is the problem.",
+        body: [
+          "The mirror had come with the house, too heavy and too ugly to be worth moving, and for the first month Leah didn't think about it at all beyond noting, vaguely, that it needed cleaning. It was her husband who first mentioned the delay — that his reflection seemed to finish nodding just after he had, a small lag he assumed was tiredness.",
+          "Leah started timing it out of idle curiosity, standing in the hallway waving her arms like a fool, and confirmed it: a half-second gap, consistent, unmistakable, that no mirror should have. She told herself it was a trick of the old, slightly warped glass. She stopped telling herself that the week the reflection began finishing gestures she hadn't made yet.",
+          "It was small at first — her mirrored hand reaching a half-second before her real one did, as if catching up to a decision she was still making. Then it began anticipating things further out: her reflection turning toward the front door a full two seconds before the knock actually came, every single time, as though it had already lived the next moment and was simply waiting, politely, for her to catch up.",
+          "She has not replaced the mirror. She has, instead, started watching it before she does anything important, the way you'd check tomorrow's weather, because it is always right, and always half a second ahead, and the one time she tried covering it with a sheet, she woke at three in the morning to find the sheet folded neatly on the floor, and the mirror bare, and her own reflection already waiting for her, already looking toward the hallway, a half-second before she'd even opened her eyes."
+        ]
+      },
+      {
+        title: "Knock Twice",
+        time: "5 min",
+        teaser: "The house rule was simple: if someone knocks once, don't answer. It had never come up before tonight.",
+        body: [
+          "The rule had been in the family so long nobody remembered starting it: one knock, ignore it; two knocks, open the door. It was the kind of superstition Callum had grown up with the way other kids grew up with not stepping on cracks, arbitrary and unquestioned, right up until the night someone actually knocked once on the cabin door and then, after a long pause, knocked once again.",
+          "He sat very still at the kitchen table, doing the arithmetic his whole family had apparently agreed on decades ago without ever explaining the reasoning: two knocks, spaced far apart, are not the same as two knocks together. He did not know which rule applied to a gap that long. He found, sitting there in the dark with his heart going hard against his ribs, that he did not actually want to find out.",
+          "The knocking continued at long, patient intervals for the better part of an hour — one knock, silence, one knock again — as if whatever was outside had also grown up with a rule, a different rule, and was simply waiting for Callum to make the mistake his family's superstition had always warned him against. Around one in the morning it stopped, all at once, mid-interval, the way a held breath stops.",
+          "In the morning he found no footprints in the frost on the porch, no marks on the door, nothing at all except, carved crudely into the inside of the doorframe where no one would see it without looking, two small marks that had not been there the day before, and looked, he thought, uncomfortably like a tally being kept of exactly how many knocks it would take."
+        ]
+      }
+    ]
+  },
+  {
+    mood: "romance",
+    label: "Romance",
+    desc: "For the ones who stayed, and the ones who left.",
+    stories: [
+      {
+        title: "Letters to No One",
+        time: "5 min",
+        teaser: "After she moves to another country, he keeps writing letters to her old address, just to have somewhere to put the day.",
+        body: [
+          "The apartment above the bakery had a new tenant within two months, a fact Julian knew because he still walked past it most evenings on his way home, and one evening in March he saw a stranger's coat on the hook by the window where hers used to hang. He kept writing anyway. Not to her new address — he had that, and used it dutifully, twice a month, careful letters about weather and work. These other letters were different. These he wrote to the old apartment, and never sent.",
+          "It started as a joke he made only to himself: a way of finishing the sentence he used to say out loud to her at the end of every day, the small useless report of how it had gone. Then it became a drawer full of envelopes with no stamps, sealed and dated and never mailed, because where would you even send a letter like that — to a version of her that still lived four blocks away, that still knew what his footsteps sounded like on the stairs.",
+          "He told her about the drawer eventually, on a video call at two in the morning her time, half as a confession and half hoping she'd laugh. She didn't laugh. She asked him to read her one, and he did, embarrassed, a short one about a dog he'd seen that reminded him of nothing in particular except that she would have liked it.",
+          "After that she asked for one every week, and he kept writing them to no one, and reading them to her, and it became, in its odd backward way, the most honest correspondence either of them had ever kept — proof that the version of him who missed her had somewhere to put the missing, instead of carrying it around all day like a coin in a closed fist."
+        ]
+      },
+      {
+        title: "The Recipe She Left Behind",
+        time: "4 min",
+        teaser: "A handwritten recipe card is missing one ingredient — and finding it turns out to take him twenty years.",
+        body: [
+          "His grandmother's tomato sauce had one line on the recipe card so faded he could never read it, a single ingredient smudged out by decades of flour-dusted hands, and for years Tomas simply left it out, and the sauce was good anyway, and he told himself that was the end of it.",
+          "It was his wife who wouldn't let it go, turning the card over at every family dinner, holding it up to lamps, joking that she'd marry him properly once he solved his grandmother's mystery ingredient, which was, of course, already a joke, since they were already married, and had been for six years by the time she said it seriously instead.",
+          "He spent an embarrassing amount of that sixth year writing to cousins in three countries, describing the smudge, the handwriting, the exact shade of the stain, until an elderly aunt in Palermo finally wrote back to say, almost offhand, that it was probably a splash of the wine his grandmother always poured into the pot and then, out of some old habit, always crossed out afterward, because she'd once been told good cooks don't put spirits in their sauce and never quite believed it, but never quite disobeyed it either.",
+          "Tomas adds the wine now, a small illicit splash, and thinks of it as the one instruction his grandmother gave and then immediately regretted giving, and his wife says it's the only ingredient in the whole recipe that actually needed twenty years to find, which is, she says, exactly how long the good ones take."
+        ]
+      },
+      {
+        title: "Two Trains, One Platform",
+        time: "5 min",
+        teaser: "Every Tuesday for a year, they've caught each other's eye across the platform, boarding trains going opposite ways.",
+        body: [
+          "Nora took the 8:14 into the city and Idris took the 8:16 out of it, and for the better part of a year the only thing they shared was four minutes on the same platform every Tuesday, standing near enough to notice each other and far enough that neither had ever said a word. She knew he always checked his watch twice. He knew she always finished her coffee exactly as her train pulled in.",
+          "It became, without either of them deciding it should, the best four minutes of both their weeks. Neither wanted to ruin it by making it into something that could be gotten wrong — a bad conversation, an awkward number exchanged, the ordinary collapse of a nice thing into a real one. So they kept it as it was: a nod, sometimes a smile, two trains pulling away from each other in opposite directions.",
+          "It was a transit strike, of all things, that finally broke the pattern — both their usual trains cancelled on the same freezing Tuesday, both of them stranded on the same platform for forty unplanned minutes with nothing left to do but talk, which they did, badly and then well, discovering in short order that they lived four streets apart and had, for a year, been walking distance from a version of this conversation the whole time.",
+          "They still take their separate trains most days, because Nora's job is still in the city and Idris's is still out of it, but Tuesdays now end with dinner instead of just a nod, and neither of them has ever quite gotten over the specific luck of a year spent almost missing each other on purpose."
+        ]
+      }
+    ]
+  },
+  {
+    mood: "adventure",
+    label: "Adventure",
+    desc: "Roads that go somewhere they shouldn't.",
+    stories: [
+      {
+        title: "The Cartographer's Mistake",
+        time: "7 min",
+        teaser: "A young mapmaker draws a mountain pass that isn't on any survey — and then a merchant swears he walked it home.",
+        body: [
+          "Elin was the third-best cartographer in Verrow, which meant she got the unglamorous commissions: the flood plains, the disputed fence lines, the roads no one important used. So when she was asked to update the eastern range maps for the tax office, she expected three boring weeks and a decent fee, and for the first two and a half weeks, that is exactly what she got.",
+          "On the last afternoon, tired and half-dreaming over her instruments, she drew a pass through the Verrow Needles that did not exist. She knew it didn't exist; she had surveyed those peaks herself and they were solid granite for eleven unbroken miles. But her pen moved anyway, sketching a notch between two spires, a thin trail switch-backing down into a valley she had never seen, and she was too tired to question her own hand until it was done.",
+          "She meant to scrape it off the vellum in the morning. Instead, a wool merchant named Costa arrived at her door before breakfast, mud to his knees, asking who had told the tax office about the new shortcut through the Needles — he'd saved four days coming home, he said, through a pass with a waterfall shaped like a bent elbow and a valley full of white moths. He described the notch between the spires exactly as she had drawn it.",
+          "Elin did not tell him she had invented it the evening before. She only asked, very carefully, whether he'd mind her coming along next time — and whether he thought the pass would still be there if she looked for it herself, or whether it only existed for as long as someone needed to believe in it. Costa laughed and said he hadn't the faintest idea, and that was, he thought, the best part of the whole business."
+        ]
+      },
+      {
+        title: "Left Turn at Midnight",
+        time: "6 min",
+        teaser: "A long-haul driver picks up a hitchhiker who gives directions to a town that stopped existing thirty years ago.",
+        body: [
+          "Cole picked up hitchhikers against every piece of advice he'd ever gotten, mostly because three in the morning on Route 9 got lonelier than any radio station could fix. The one he picked up that night was an older man in a canvas coat far too heavy for the season, who got in without much conversation and said only, when Cole asked where to, 'Aldermere. Left at the water tower.'",
+          "Cole knew Route 9 the way some men know their own hands, and he was fairly sure there hadn't been a town called Aldermere in his lifetime, water tower or not. But the man seemed certain, and it was a slow night, and Cole had learned that the fastest way through an awkward silence was to just drive, so he drove, and at the place where a water tower really did rise up out of the dark, rusted and unused, he turned left onto a road he'd genuinely never noticed before.",
+          "The road went on longer than it had any right to, past fields Cole didn't recognize despite having driven this stretch for eleven years, until it ended, unglamorously, at a gate and a chain-link fence and a faded sign that read ALDERMERE RESERVOIR — TOWN RELOCATED 1994. Cole sat with the engine idling, unsure what to say to a man who'd just directed him to a town that had been underwater for three decades.",
+          "When he turned around, the passenger seat was empty, the door still shut, the seatbelt still buckled around nothing at all. Cole didn't scream, exactly. He drove back to the water tower very carefully, obeying every speed limit sign as if the road itself were watching, and he never picked up another hitchhiker again — though for years afterward, he kept an old canvas coat folded on the passenger seat, in case anyone from Aldermere ever needed a ride back."
+        ]
+      },
+      {
+        title: "The Last Ferry to Nowhere",
+        time: "6 min",
+        teaser: "The midnight ferry only runs when the harbor master decides the weather is right — and it never quite lands where the timetable says.",
+        body: [
+          "Every coastal town has one boat nobody quite trusts, and in Wrenmouth it was the midnight ferry, run by an old harbor master named Silas who posted no fixed schedule, only a chalkboard that occasionally read TONIGHT and was otherwise blank for weeks at a time. Bea had lived in Wrenmouth nineteen years without ever once seeing it sail.",
+          "She boarded it, finally, the week her mother died, mostly because she needed to be somewhere that wasn't the funeral home, and Silas took her fare without a word and cast off into a fog so thick the harbor lights vanished behind them within a minute. The timetable, tacked crookedly by the wheelhouse, promised a forty-minute crossing to Dunmore Isle. They were at sea for almost three hours.",
+          "When they finally docked, it was not Dunmore Isle. It was a smaller, greener place with no name Bea could find on any chart, where an old woman on the pier took one look at her and said, gently, that the ferry only ever lands where a passenger most needs to be, whether or not that matches where they meant to go, and that Bea should sit a while before deciding whether she was ready to go back.",
+          "She sat for what felt like an hour and turned out, by the ferry's clock, to be almost a full day. She has never found that island again on any map, has never asked Silas where exactly his boat actually goes, and has instead simply started trusting the chalkboard — because the one time she needed to be somewhere other than where she was, the ferry, against every printed timetable, had known exactly where that was before she did."
+        ]
+      }
+    ]
+  }
+];
+
+const shelvesContainer = document.getElementById('shelves');
+const allStories = [];
+
+shelves.forEach(shelf => {
+  const section = document.createElement('div');
+  section.className = 'shelf-section';
+  section.id = 'shelf-' + shelf.mood;
+
+  const labelHtml = `
+    <div class="shelf-label">
+      <div class="name-group">
+        <h3>${shelf.label}</h3>
+        <span class="shelf-desc">${shelf.desc}</span>
+      </div>
+      <span class="shelf-count">${shelf.stories.length} tales</span>
+    </div>
+  `;
+
+  const rowEl = document.createElement('div');
+  rowEl.className = 'shelf-row';
+
+  shelf.stories.forEach(s => {
+    const globalIdx = allStories.length;
+    allStories.push({ ...s, mood: shelf.mood });
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', 'Read ' + s.title);
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="mood-tag">${shelf.mood}</span>
+        <span class="read-time">⏱ ${s.time}</span>
+      </div>
+      <h3>${s.title}</h3>
+      <p class="teaser">${s.teaser}</p>
+      <div class="card-bottom">
+        <span class="seal"></span>
+        <span class="read-link">Read story →</span>
+      </div>
+    `;
+    card.addEventListener('click', () => openStory(globalIdx));
+    card.addEventListener('keypress', (e) => { if (e.key === 'Enter') openStory(globalIdx); });
+    rowEl.appendChild(card);
+  });
+
+  section.innerHTML = labelHtml;
+  section.appendChild(rowEl);
+
+  const plank = document.createElement('div');
+  plank.className = 'plank';
+  section.appendChild(plank);
+
+  shelvesContainer.appendChild(section);
+});
+
+document.getElementById('shuffle').addEventListener('click', () => {
+  const i = Math.floor(Math.random() * allStories.length);
+  openStory(i);
+});
+
+// Reading modal
+const overlay = document.getElementById('overlay');
+const modalTitle = document.getElementById('modalTitle');
+const modalMeta = document.getElementById('modalMeta');
+const modalMood = document.getElementById('modalMood');
+const modalBody = document.getElementById('modalBody');
+const pageEl = document.getElementById('page');
+let fontSize = 1.08;
+
+const ALL_MOODS = ['wonder','mystery','horror','romance','adventure'];
+const moodIcon = { wonder: '✦', mystery: '⌕', horror: '✕', romance: '♡', adventure: '➤' };
+let currentMood = null;
+
+function clearSparks(){
+  pageEl.querySelectorAll('.spark').forEach(el => el.remove());
+}
+
+function addSparks(){
+  clearSparks();
+  const spots = [
+    { top: '8%',  left: '88%' },
+    { top: '18%', left: '6%'  },
+    { top: '46%', left: '92%' },
+    { top: '72%', left: '4%'  },
+    { top: '88%', left: '80%' }
+  ];
+  spots.forEach((pos, i) => {
+    const dot = document.createElement('span');
+    dot.className = 'spark';
+    dot.style.top = pos.top;
+    dot.style.left = pos.left;
+    dot.style.animationDelay = (i * 0.35) + 's';
+    pageEl.appendChild(dot);
+  });
+}
+
+/* ---------- ghostly sound, synthesized live (no audio files needed) ---------- */
+let soundOn = true;
+let audioCtx = null;
+let masterGain = null;
+let noiseBuffer = null;
+
+function ensureAudio(){
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return;
+  }
+  try{
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = volume;
+    masterGain.connect(audioCtx.destination);
+  }catch(e){ audioCtx = null; }
+}
+
+function getNoiseBuffer(){
+  if (!noiseBuffer && audioCtx){
+    const len = audioCtx.sampleRate * 2;
+    noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuffer;
+}
+
+// loud shriek + noise burst for the jump-scare close
+function playJumpScare(){
+  if (!soundOn || !audioCtx) return;
+  const t = audioCtx.currentTime;
+  const buf = getNoiseBuffer();
+  if (buf){
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const hp = audioCtx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 180;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.5, t + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    src.connect(hp); hp.connect(g); g.connect(masterGain);
+    src.start(t); src.stop(t + 0.45);
+  }
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(220, t);
+  osc.frequency.exponentialRampToValueAtTime(1400, t + 0.32);
+  const gOsc = audioCtx.createGain();
+  gOsc.gain.setValueAtTime(0.0001, t);
+  gOsc.gain.exponentialRampToValueAtTime(0.2, t + 0.1);
+  gOsc.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+  osc.connect(gOsc); gOsc.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.42);
+}
+
+/* ---------- continuous ambient bed, one per mood, playing for as long as the overlay is open ---------- */
+let activeAmbient = null;
+
+function stopAmbient(){
+  if (!activeAmbient || !audioCtx) return;
+  const { fadeGain, nodes } = activeAmbient;
+  const now = audioCtx.currentTime;
+  try{
+    fadeGain.gain.cancelScheduledValues(now);
+    fadeGain.gain.setValueAtTime(fadeGain.gain.value, now);
+    fadeGain.gain.linearRampToValueAtTime(0.0001, now + 0.4);
+  }catch(e){}
+  setTimeout(() => {
+    nodes.forEach(n => { try{ n.stop && n.stop(); }catch(e){} try{ n.disconnect(); }catch(e){} });
+  }, 450);
+  activeAmbient = null;
+}
+
+function startAmbient(mood){
+  stopAmbient();
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const fadeGain = audioCtx.createGain();
+  fadeGain.gain.setValueAtTime(0.0001, now);
+  fadeGain.connect(masterGain);
+  const nodes = [fadeGain];
+
+  function addOsc(type, freq, gainVal){
+    const osc = audioCtx.createOscillator();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(gainVal, now);
+    osc.connect(g); g.connect(fadeGain);
+    osc.start(now);
+    nodes.push(osc, g);
+    return { osc, g };
+  }
+
+  function addLFO(freq, depth, targetParam){
+    const lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(freq, now);
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.setValueAtTime(depth, now);
+    lfo.connect(lfoGain); lfoGain.connect(targetParam);
+    lfo.start(now);
+    nodes.push(lfo, lfoGain);
+  }
+
+  function addNoiseBed(filterType, freq, gainVal){
+    const buf = getNoiseBuffer();
+    if (!buf) return null;
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const filt = audioCtx.createBiquadFilter();
+    filt.type = filterType; filt.frequency.setValueAtTime(freq, now);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(gainVal, now);
+    src.connect(filt); filt.connect(g); g.connect(fadeGain);
+    src.start(now);
+    nodes.push(src, filt, g);
+    return filt;
+  }
+
+  let targetVol = 0.1;
+
+  if (mood === 'wonder'){
+    // airy, shimmering chime bed
+    targetVol = 0.09;
+    const { g: g1 } = addOsc('sine', 660, 0.05);
+    const { g: g2 } = addOsc('sine', 664, 0.035);
+    addLFO(0.18, 0.02, g1.gain);
+    addLFO(0.23, 0.015, g2.gain);
+  } else if (mood === 'mystery'){
+    // low tense drone under a slowly shifting filtered hush
+    targetVol = 0.11;
+    addOsc('sine', 100, 0.05);
+    const filt = addNoiseBed('lowpass', 500, 0.05);
+    if (filt) addLFO(0.1, 130, filt.frequency);
+  } else if (mood === 'horror'){
+    // dissonant sub-bass beating under a low hiss
+    targetVol = 0.13;
+    const { g: g1 } = addOsc('sine', 54, 0.08);
+    addOsc('sine', 57, 0.06);
+    addNoiseBed('lowpass', 280, 0.035);
+    addLFO(0.07, 0.02, g1.gain);
+  } else if (mood === 'romance'){
+    // warm, slowly swelling pad a major third apart
+    targetVol = 0.08;
+    const { g: g1 } = addOsc('sine', 220, 0.045);
+    addOsc('sine', 277.18, 0.03);
+    addLFO(0.15, 0.012, g1.gain);
+  } else if (mood === 'adventure'){
+    // low pulsing drone with a thin, windy high hiss
+    targetVol = 0.1;
+    const { g: g1 } = addOsc('sine', 90, 0.055);
+    addLFO(0.55, 0.03, g1.gain);
+    addNoiseBed('highpass', 1200, 0.018);
+  }
+
+  fadeGain.gain.linearRampToValueAtTime(targetVol, now + 1.1);
+  activeAmbient = { fadeGain, nodes };
+}
+
+const soundToggleBtn = document.getElementById('soundToggle');
+const soundUpBtn = document.getElementById('soundUp');
+const soundDownBtn = document.getElementById('soundDown');
+let volume = 0.55;
+
+function updateSoundIcon(){
+  if (!soundOn || volume <= 0.001) soundToggleBtn.textContent = '🔇';
+  else if (volume < 0.32) soundToggleBtn.textContent = '🔈';
+  else if (volume < 0.68) soundToggleBtn.textContent = '🔉';
+  else soundToggleBtn.textContent = '🔊';
+}
+
+function applyVolume(){
+  if (!masterGain || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  const target = (soundOn ? volume : 0) || 0.0001;
+  masterGain.gain.cancelScheduledValues(now);
+  masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+  masterGain.gain.linearRampToValueAtTime(target, now + 0.15);
+  updateSoundIcon();
+}
+
+soundToggleBtn.addEventListener('click', () => {
+  ensureAudio();
+  soundOn = !soundOn;
+  applyVolume();
+});
+
+soundUpBtn.addEventListener('click', () => {
+  ensureAudio();
+  volume = Math.min(1, volume + 0.14);
+  soundOn = true;
+  applyVolume();
+});
+
+soundDownBtn.addEventListener('click', () => {
+  ensureAudio();
+  volume = Math.max(0, volume - 0.14);
+  if (volume <= 0.001) soundOn = false;
+  applyVolume();
+});
+
+/* ---------- wandering icons, themed per category, appear on scroll ---------- */
+const GHOST_SVG = `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+  <path d="M50,6 C26,6 12,26 12,54 L12,108 C12,108 20,98 28,106 C36,114 42,96 50,104 C58,112 64,94 72,106 C80,98 88,108 88,108 L88,54 C88,26 74,6 50,6 Z" fill="rgba(240,240,250,0.92)" stroke="rgba(120,120,150,0.3)" stroke-width="1"/>
+  <circle cx="37" cy="48" r="5.5" fill="#2a2a38"/>
+  <circle cx="63" cy="48" r="5.5" fill="#2a2a38"/>
+  <ellipse cx="50" cy="65" rx="4" ry="5" fill="rgba(42,42,56,0.55)"/>
+</svg>`;
+
+const MOOD_ICON_SVG = {
+  wonder: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50,2 L59,41 L98,50 L59,59 L50,98 L41,59 L2,50 L41,41 Z" fill="rgba(232,225,250,0.94)" stroke="rgba(155,140,217,0.4)" stroke-width="1"/>
+    <circle cx="50" cy="50" r="7" fill="rgba(255,255,255,0.9)"/>
+  </svg>`,
+  mystery: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="40" cy="40" r="25" fill="rgba(20,26,38,0.35)" stroke="rgba(200,212,230,0.9)" stroke-width="7"/>
+    <line x1="58" y1="58" x2="90" y2="90" stroke="rgba(200,212,230,0.9)" stroke-width="9" stroke-linecap="round"/>
+  </svg>`,
+  horror: GHOST_SVG,
+  romance: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50,92 C18,68 4,48 4,30 C4,15 15,4 30,4 C40,4 48,10 50,19 C52,10 60,4 70,4 C85,4 96,15 96,30 C96,48 82,68 50,92 Z" fill="rgba(230,150,172,0.92)" stroke="rgba(178,88,112,0.35)" stroke-width="1"/>
+  </svg>`,
+  adventure: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="rgba(24,20,10,0.3)" stroke="rgba(230,190,142,0.9)" stroke-width="5"/>
+    <polygon points="50,16 60,50 50,84 40,50" fill="rgba(224,112,63,0.92)"/>
+    <circle cx="50" cy="50" r="4" fill="rgba(230,190,142,0.95)"/>
+  </svg>`
+};
+
+let currentGhost = null;
+let lastCursor = { x: 80, y: 80 };
+let ghostScrollLock = false;
+
+function clearGhosts(){
+  pageEl.querySelectorAll('.ghost').forEach(el => el.remove());
+  currentGhost = null;
+}
+
+function spawnGhost(){
+  const g = document.createElement('div');
+  g.className = 'ghost';
+  g.innerHTML = MOOD_ICON_SVG[currentMood] || GHOST_SVG;
+  const viewTop = pageEl.scrollTop;
+  const viewH = pageEl.clientHeight;
+  const top = viewTop + 30 + Math.random() * Math.max(40, viewH - 160);
+  const fromLeft = Math.random() < 0.5;
+  const left = fromLeft ? (3 + Math.random() * 8) : (79 + Math.random() * 10);
+  g.style.top = top + 'px';
+  g.style.left = left + '%';
+  g.style.setProperty('--enter-x', fromLeft ? '-60px' : '60px');
+  pageEl.appendChild(g);
+  requestAnimationFrame(() => g.classList.add('appear'));
+  return g;
+}
+
+function dissolveGhost(g){
+  if (!g || !g.isConnected) return;
+  const gx = g.offsetLeft + g.offsetWidth / 2;
+  const gy = g.offsetTop + g.offsetHeight / 2;
+  const dx = lastCursor.x - gx;
+  const dy = lastCursor.y - gy;
+  g.style.setProperty('--dx', dx + 'px');
+  g.style.setProperty('--dy', dy + 'px');
+  g.classList.remove('appear');
+  void g.offsetWidth; // reflow so the dissolve transition restarts cleanly
+  g.classList.add('dissolve');
+  setTimeout(() => g.remove(), 600);
+}
+
+pageEl.addEventListener('mousemove', (e) => {
+  const rect = pageEl.getBoundingClientRect();
+  lastCursor.x = e.clientX - rect.left + pageEl.scrollLeft;
+  lastCursor.y = e.clientY - rect.top + pageEl.scrollTop;
+});
+
+pageEl.addEventListener('scroll', () => {
+  if (!currentMood) return;
+  if (ghostScrollLock) return;
+  ghostScrollLock = true;
+  setTimeout(() => { ghostScrollLock = false; }, 450);
+
+  if (currentGhost) dissolveGhost(currentGhost);
+  currentGhost = spawnGhost();
+});
+
+/* ---------- jump-scare close, horror stories only ---------- */
+let closing = false;
+
+function jumpScareClose(){
+  if (closing) return;
+  closing = true;
+  playJumpScare();
+
+  const btn = document.getElementById('closeBtn');
+  const rect = btn.getBoundingClientRect();
+  const jg = document.createElement('div');
+  jg.className = 'jump-ghost';
+  jg.innerHTML = GHOST_SVG;
+  jg.style.left = rect.left + 'px';
+  jg.style.top = rect.top + 'px';
+  jg.style.width = rect.width + 'px';
+  jg.style.height = rect.height + 'px';
+  jg.style.transition = 'left .5s cubic-bezier(.2,.85,.3,1), top .5s cubic-bezier(.2,.85,.3,1), width .5s cubic-bezier(.2,.85,.3,1), height .5s cubic-bezier(.2,.85,.3,1), opacity .2s ease';
+  document.body.appendChild(jg);
+
+  void jg.offsetWidth; // reflow before animating to fullscreen
+  requestAnimationFrame(() => {
+    jg.style.opacity = '1';
+    jg.style.left = '0px';
+    jg.style.top = '0px';
+    jg.style.width = '100vw';
+    jg.style.height = '100vh';
+  });
+
+  setTimeout(() => { closeStory(); }, 420);
+  setTimeout(() => {
+    jg.style.transition = 'opacity .3s ease';
+    jg.style.opacity = '0';
+  }, 500);
+  setTimeout(() => {
+    jg.remove();
+    closing = false;
+  }, 820);
+}
+
+function openStory(idx){
+  const s = allStories[idx];
+  currentMood = s.mood;
+
+  // reset so the entrance animation replays even if the same mood is opened twice in a row
+  overlay.classList.remove('open');
+  ALL_MOODS.forEach(m => { overlay.classList.remove('mood-' + m); pageEl.classList.remove('mood-' + m); });
+  clearSparks();
+  clearGhosts();
+  void overlay.offsetWidth; // force reflow
+
+  modalTitle.textContent = s.title;
+  modalMeta.textContent = s.time + ' read';
+  modalMood.textContent = (moodIcon[s.mood] || '') + '  ' + s.mood;
+  modalBody.innerHTML = s.body.map(p => `<p>${p}</p>`).join('');
+  fontSize = 1.08;
+  modalBody.style.fontSize = fontSize + 'rem';
+
+  overlay.classList.add('mood-' + s.mood);
+  pageEl.classList.add('mood-' + s.mood);
+  if (s.mood === 'wonder') addSparks();
+
+  soundToggleBtn.style.display = 'inline-block';
+  soundUpBtn.style.display = 'inline-block';
+  soundDownBtn.style.display = 'inline-block';
+  ensureAudio(); // unlock audio now, while we're inside a click handler
+  updateSoundIcon();
+  startAmbient(s.mood);
+  if (s.mood === 'horror'){
+    lastCursor = { x: 340, y: 200 };
+  }
+
+  overlay.classList.add('open');
+  pageEl.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStory(){
+  overlay.classList.remove('open');
+  clearGhosts();
+  stopAmbient();
+  document.body.style.overflow = '';
+}
+
+document.getElementById('closeBtn').addEventListener('click', () => {
+  if (currentMood === 'horror') jumpScareClose();
+  else closeStory();
+});
+overlay.addEventListener('click', (e) => { if (e.target === overlay) closeStory(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !closing) closeStory(); });
+
+document.getElementById('fontUp').addEventListener('click', () => {
+  fontSize = Math.min(1.6, fontSize + 0.08);
+  modalBody.style.fontSize = fontSize + 'rem';
+});
+document.getElementById('fontDown').addEventListener('click', () => {
+  fontSize = Math.max(0.85, fontSize - 0.08);
+  modalBody.style.fontSize = fontSize + 'rem';
+});
+
+// Cursor lantern glow
+const lantern = document.getElementById('lantern');
+window.addEventListener('mousemove', (e) => {
+  const x = (e.clientX / window.innerWidth) * 100;
+  const y = (e.clientY / window.innerHeight) * 100;
+  lantern.style.background = `radial-gradient(480px circle at ${x}% ${y}%, rgba(224,112,63,0.14), transparent 70%)`;
+});
+</script>
+</body>
+</html>
