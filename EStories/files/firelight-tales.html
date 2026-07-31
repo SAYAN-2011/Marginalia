@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Firelight Tales — A Small Library for After Dark</title>
+<meta name="description" content="A small library of short stories, sorted onto five shelves by mood.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -124,6 +125,63 @@
   .scroll-hint .stem{ width:1px; height: 34px; background: linear-gradient(to bottom, var(--gold), transparent); }
 
   /* LIBRARY INTRO */
+  /* featured story panel (Marginalia-style hero pick) */
+  .featured-wrap{
+    position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 0 6vw 10px;
+  }
+  .featured-card{
+    display:flex; gap: 32px; align-items: stretch;
+    background: linear-gradient(155deg, var(--ink-raised), var(--ink-raised-2));
+    border: 1px solid var(--line); border-radius: 10px; padding: 30px; overflow: hidden;
+  }
+  @media (max-width: 760px){ .featured-card{ flex-direction: column; } }
+  .hero-image{
+    flex: 0 0 260px; border-radius: 8px; background-size: cover; background-position: center;
+    min-height: 200px; background-color: rgba(255,255,255,0.03);
+  }
+  @media (max-width: 760px){ .hero-image{ flex: none; height: 180px; } }
+  .hero-text{ display:flex; flex-direction: column; justify-content: center; }
+  .hero-text .featured-eyebrow{
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+  }
+  .hero-text h3{
+    font-family: var(--display); font-style: italic; font-weight: 500; font-size: 1.7rem;
+    color: var(--parchment); margin: 0 0 12px; line-height: 1.2;
+  }
+  .hero-text p{ font-size: 0.98rem; line-height: 1.6; color: var(--star); margin: 0 0 20px; max-width: 60ch; }
+  .hero-text .cta{ align-self: flex-start; }
+
+  /* search + tag rail */
+  .find-bar{
+    position: relative; z-index: 2; max-width: 1180px; margin: 34px auto 0; padding: 0 6vw;
+    display:flex; flex-direction: column; gap: 16px;
+  }
+  #search-input{
+    width: 100%; background: var(--ink-raised); border: 1px solid var(--line); color: var(--parchment);
+    font-family: var(--body); font-size: 0.98rem; padding: 13px 18px; border-radius: 100px;
+    transition: border-color .2s ease;
+  }
+  #search-input::placeholder{ color: var(--star-dim); }
+  #search-input:focus{ outline: none; border-color: var(--ember); }
+
+  .tag-rail{ display:flex; gap: 10px; flex-wrap: wrap; overflow-x: auto; padding-bottom: 4px; }
+  .tag-chip{
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--line); color: var(--star);
+    padding: 8px 15px; border-radius: 100px; cursor: pointer; white-space: nowrap;
+    transition: all .2s ease;
+  }
+  .tag-chip:hover{ border-color: var(--gold); color: var(--parchment); }
+  .tag-chip.active{ background: var(--ember); border-color: var(--ember); color: var(--ink); }
+
+  .archive-count{
+    font-family: var(--mono); font-size: 0.7rem; color: var(--star-dim); margin-right: auto;
+  }
+
+  .card.is-hidden{ display: none !important; }
+  .shelf-section.is-hidden{ display: none !important; }
+
   .library-intro{
     position: relative; z-index: 2; max-width: 1180px; margin: 0 auto;
     padding: 70px 6vw 10px;
@@ -375,12 +433,203 @@
   }
   .story-end{ margin-top: 30px; text-align:center; color: rgba(43,36,23,0.4); font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.3em; }
 
+  /* nav entry point for the admin drawer */
+  nav.top-nav #openAdminBtn{ color: var(--gold); }
+  nav.top-nav #openAdminBtn:hover{ color: var(--ember-bright); }
+
+  /* ---------- Editor's Desk (admin) ---------- */
+  .admin-overlay{
+    position: fixed; inset:0; z-index: 150; background: rgba(8,8,14,0.88);
+    backdrop-filter: blur(6px); display:flex; align-items:center; justify-content:center;
+    padding: 4vh 4vw; opacity:0; pointer-events:none; transition: opacity .35s ease;
+  }
+  .admin-overlay.open{ opacity:1; pointer-events:auto; }
+  .admin-panel{
+    width: min(920px, 100%); max-height: 92vh; overflow-y: auto;
+    background: linear-gradient(155deg, var(--ink-raised), var(--ink-raised-2));
+    border: 1px solid var(--line); border-radius: 8px; padding: 34px 34px 40px;
+    transform: translateY(18px) scale(0.98); opacity: 0;
+    transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .35s ease;
+  }
+  .admin-overlay.open .admin-panel{ transform: translateY(0) scale(1); opacity:1; }
+  .admin-panel-head{ display:flex; align-items:flex-start; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
+  .admin-panel-head h2{ font-family: var(--display); font-weight: 500; font-style: italic; font-size: 1.5rem; color: var(--parchment); margin: 0 0 4px; }
+  .admin-sub{ font-family: var(--mono); font-size: 0.7rem; color: var(--star-dim); margin: 0; max-width: 42ch; }
+  .admin-panel .close-btn{ border-color: var(--line); color: var(--star); flex-shrink: 0; }
+  .admin-panel .close-btn:hover{ background: rgba(255,255,255,0.06); }
+
+  .admin-grid{ display:grid; grid-template-columns: 1.05fr 0.95fr; gap: 30px; }
+  @media (max-width: 800px){ .admin-grid{ grid-template-columns: 1fr; } }
+
+  .a-field{ margin-bottom: 16px; }
+  .a-field label{
+    display:block; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 7px;
+  }
+  .a-field input, .a-field textarea, .a-field select{
+    width:100%; background: var(--ink); border: 1px solid var(--line); color: var(--parchment);
+    font-family: var(--body); font-size: 0.92rem; padding: 11px 13px; border-radius: 4px;
+  }
+  .a-field input:focus, .a-field textarea:focus, .a-field select:focus{ outline:none; border-color: var(--ember); }
+  .a-field textarea{ resize: vertical; line-height: 1.55; }
+  .a-row2{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 480px){ .a-row2{ grid-template-columns: 1fr; } }
+  .a-btn-row{ display:flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+  .a-btn-row .cta{ padding: 12px 22px; }
+  .a-status{ font-family: var(--mono); font-size: 0.7rem; color: var(--gold); margin-top: 12px; min-height: 1.1em; }
+  .a-status.bad{ color: #d9716e; }
+
+  .a-preview-card{
+    background: linear-gradient(155deg, var(--ink), var(--ink-raised));
+    border: 1px solid var(--line); border-radius: 6px; padding: 22px 20px 18px;
+    min-height: 175px; display:flex; flex-direction:column; margin-bottom: 20px;
+  }
+  .a-preview-card .card-top{ display:flex; justify-content: space-between; align-items:center; margin-bottom: 14px; }
+  .a-preview-card h3{ font-family: var(--display); font-weight: 500; font-size: 1.15rem; color: var(--parchment); margin: 0 0 8px; }
+  .a-preview-card p{ font-size: 0.85rem; line-height: 1.5; color: var(--star); margin:0; flex-grow:1; }
+  .a-preview-page-wrap{ max-height: 260px; overflow-y: auto; border-radius: 4px; margin-bottom: 24px; }
+  .a-preview-page{ background: var(--parchment); color:#2b2417; padding: 26px 26px 22px; border-radius:4px; }
+  .a-preview-page h2{ font-family: var(--display); font-style: italic; font-size: 1.25rem; margin: 0 0 4px; }
+  .a-preview-page .meta{ font-family: var(--mono); font-size: 0.62rem; color: rgba(43,36,23,0.55); margin-bottom: 14px; }
+  .a-preview-page p{ font-family: var(--body); font-size: 0.9rem; line-height: 1.65; margin: 0 0 0.9em; }
+  .a-list-head{ font-family: var(--display); font-weight:500; color: var(--parchment); font-size: 1.05rem; margin: 0 0 10px; }
+  .a-story-row{ display:flex; align-items:center; justify-content: space-between; gap: 10px; padding: 11px 2px; border-bottom: 1px dashed var(--line); }
+  .a-story-row:last-child{ border-bottom:none; }
+  .a-story-row .t{ font-family: var(--display); color: var(--parchment); font-size: 0.94rem; }
+  .a-story-row .m{ font-family: var(--mono); font-size: 0.62rem; color: var(--star-dim); text-transform: uppercase; }
+  .a-story-row .actions{ display:flex; gap: 6px; }
+  .a-empty{ font-family: var(--mono); font-size: 0.75rem; color: var(--star-dim); }
+
   @media (prefers-reduced-motion: reduce){
     *{ transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   }
+
+/* ============================================================
+   Admin / Editor's Desk — dedicated admin.html page
+   ============================================================ */
+body.admin-body{ background: var(--ink); }
+.wrap{ max-width: 1180px; margin: 0 auto; padding: 0 5vw; }
+
+.admin-shell{ min-height: 100vh; }
+
+.admin-topbar{
+  border-bottom: 1px solid var(--line);
+  padding: 18px 0;
+}
+.admin-topbar .wrap{ display:flex; align-items:center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+.admin-topbar .logo{
+  font-family: var(--display); font-style: italic; font-weight: 500; font-size: 1.15rem;
+  color: var(--parchment); text-decoration: none;
+}
+.admin-topbar .logo .dot{ color: var(--ember-bright); }
+.admin-topbar-actions{ display:flex; gap: 18px; }
+.admin-topbar-actions a{
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--star-dim); text-decoration: none; transition: color .2s ease;
+}
+.admin-topbar-actions a:hover{ color: var(--ember-bright); }
+
+/* login gate */
+.login-screen{
+  min-height: calc(100vh - 64px); display:flex; align-items:center; justify-content:center; padding: 40px 5vw;
+}
+.login-card{
+  background: linear-gradient(155deg, var(--ink-raised), var(--ink-raised-2));
+  border: 1px solid var(--line); border-radius: 8px; padding: 40px 36px; width: min(380px, 100%);
+}
+.login-card h1{ font-family: var(--display); font-style: italic; font-weight: 500; color: var(--parchment); margin: 0 0 12px; font-size: 1.6rem; }
+.login-card .hint{ font-family: var(--mono); font-size: 0.72rem; color: var(--star-dim); line-height: 1.6; margin: 0 0 24px; }
+.login-card .hint strong{ color: var(--gold); }
+
+/* form fields, shared by login + entry forms */
+.field{ margin-bottom: 18px; }
+.field label{
+  display:block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 8px;
+}
+.field input, .field select, .field textarea{
+  width: 100%; background: var(--ink-field); border: 1px solid var(--line); color: var(--parchment);
+  font-family: var(--body); font-size: 0.96rem; padding: 11px 13px; border-radius: 4px;
+  transition: border-color .2s ease;
+}
+.field input:focus, .field select:focus, .field textarea:focus{ outline: none; border-color: var(--ember); }
+.field textarea{ min-height: 160px; resize: vertical; line-height: 1.6; }
+#post-content{ min-height: 200px; }
+.field-error{ font-family: var(--mono); font-size: 0.68rem; color: var(--bad); min-height: 1em; margin-top: 6px; }
+
+select{
+  appearance: none; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+
+.btn{
+  font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 12px 22px; border-radius: 4px; border: none; cursor: pointer; transition: all .2s ease;
+  background: var(--ember); color: var(--ink);
+}
+.btn:hover{ background: var(--ember-bright); transform: translateY(-1px); }
+.btn-secondary{ background: transparent; color: var(--star); border: 1px solid var(--line); }
+.btn-secondary:hover{ border-color: var(--gold); color: var(--parchment); background: transparent; transform: none; }
+.btn-full{ width: 100%; }
+.form-actions{ display:flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+
+/* admin main layout */
+.admin-main{ padding: 40px 0 100px; }
+.stat-row{ display:flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; }
+.stat-pill{
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em;
+  padding: 10px 16px; border-radius: 100px; border: 1px solid var(--line); color: var(--star);
+  display:flex; align-items:center; gap: 8px;
+}
+.stat-pill strong{ color: var(--parchment); font-family: var(--display); font-style: normal; font-size: 0.95rem; }
+
+.admin-grid{ display:grid; grid-template-columns: minmax(0,1.05fr) minmax(0,0.95fr); gap: 28px; }
+@media (max-width: 980px){ .admin-grid{ grid-template-columns: 1fr; } }
+
+.panel{
+  background: linear-gradient(155deg, var(--ink-raised), var(--ink-raised-2));
+  border: 1px solid var(--line); border-radius: 8px; padding: 28px 28px 30px;
+}
+.panel-head{ display:flex; align-items:flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+.panel-head h2{ font-family: var(--display); font-weight: 500; font-size: 1.25rem; color: var(--parchment); margin: 0 0 4px; }
+.panel-sub{ font-family: var(--mono); font-size: 0.7rem; color: var(--star-dim); margin: 0; }
+.admin-footnote{ font-family: var(--mono); font-size: 0.68rem; color: var(--star-dim); line-height: 1.7; margin-top: 20px; }
+.admin-footnote code{ color: var(--gold); }
+
+.admin-post-list{ display:flex; flex-direction: column; }
+.admin-row{
+  display:flex; align-items:center; justify-content: space-between; gap: 14px;
+  padding: 14px 2px; border-bottom: 1px dashed var(--line);
+}
+.admin-row:last-child{ border-bottom: none; }
+.admin-row .info{ min-width: 0; }
+.admin-row .info .t{ font-family: var(--display); color: var(--parchment); font-size: 1.02rem; }
+.admin-row .info .m{ font-family: var(--mono); font-size: 0.65rem; color: var(--star-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+.admin-row .info .m .status-draft{ color: var(--bad); }
+.admin-row .info .m .status-published{ color: var(--ok); }
+.admin-row .actions{ display:flex; gap: 8px; flex-shrink: 0; }
+.icon-btn{
+  background: transparent; border: 1px solid var(--line); color: var(--star-dim);
+  width: 30px; height: 30px; border-radius: 50%; cursor:pointer; font-size: 0.8rem; transition: all .2s ease;
+}
+.icon-btn:hover{ border-color: var(--ember); color: var(--ember-bright); }
+.icon-btn.danger:hover{ border-color: var(--bad); color: var(--bad); }
+.admin-empty{ font-family: var(--mono); font-size: 0.78rem; color: var(--star-dim); padding: 10px 2px; }
+
+.toast{
+  position: fixed; bottom: 26px; left: 50%; transform: translate(-50%, 20px);
+  background: var(--ink-raised-2); border: 1px solid var(--gold); color: var(--parchment);
+  font-family: var(--mono); font-size: 0.76rem; padding: 13px 22px; border-radius: 6px;
+  box-shadow: 0 20px 40px -14px rgba(0,0,0,0.6); opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease; z-index: 500;
+}
+.toast.show{ opacity: 1; transform: translate(-50%, 0); }
+
 </style>
 </head>
-<body>
+<body data-page="site">
 
 <div id="sky"></div>
 <div id="lantern"></div>
@@ -393,6 +642,7 @@
     <a href="#shelf-horror">Horror</a>
     <a href="#shelf-romance">Romance</a>
     <a href="#shelf-adventure">Adventure</a>
+    <a href="admin.html">✎ Admin</a>
   </nav>
 </header>
 
@@ -404,9 +654,22 @@
   <div class="scroll-hint"><span>the shelves</span><span class="stem"></span></div>
 </section>
 
+<section class="featured-wrap" id="featured-wrap" style="display:none;">
+  <div class="featured-card">
+    <div id="hero-image" class="hero-image" style="display:none;"></div>
+    <div id="hero-featured" class="hero-text"></div>
+  </div>
+</section>
+
+<div class="find-bar">
+  <input type="search" id="search-input" placeholder="Search titles, teasers, tags…" aria-label="Search entries">
+  <div class="tag-rail" id="tag-rail"></div>
+</div>
+
 <div class="library-intro" id="library">
   <h2>The Shelves</h2>
   <p>Five moods, three tales each. Pick a shelf, or let chance pick for you.</p>
+  <span class="archive-count" id="archive-count"></span>
   <button class="shuffle-btn" id="shuffle">🎲 Surprise me</button>
 </div>
 
@@ -437,265 +700,449 @@
 </div>
 
 <script>
-const shelves = [
+/* ============================================================
+   Firelight Tales — shared script (site + admin)
+   Mirrors the Marginalia pattern: a single stories.json is the
+   published source of truth. Edits made in admin.html save
+   instantly to this browser (localStorage) so you can preview
+   them right away; Export JSON in the admin gives you an updated
+   stories.json to replace in your project folder, which is what
+   makes changes visible to every visitor.
+   ============================================================ */
+
+const MOODS = {
+  wonder:    { label: 'Wonder',    accent: '#9b8cd9', icon: '✦', desc: "Small miracles, patiently explained." },
+  mystery:   { label: 'Mystery',   accent: '#7fa0c4', icon: '⌕', desc: "Somebody knows more than they're saying." },
+  horror:    { label: 'Horror',    accent: '#c14b4b', icon: '✕', desc: "Best read with the lights still on." },
+  romance:   { label: 'Romance',   accent: '#e08aa0', icon: '♡', desc: "For the ones who stayed, and the ones who left." },
+  adventure: { label: 'Adventure', accent: '#e0703f', icon: '➤', desc: "Roads that go somewhere they shouldn't." }
+};
+
+const FALLBACK_STORIES = [
   {
-    mood: "wonder",
-    label: "Wonder",
-    desc: "Small miracles, patiently explained.",
-    stories: [
-      {
-        title: "The Weight of Water",
-        time: "5 min",
-        teaser: "A lighthouse keeper's daughter learns to read the tide the way other children read books — and finds a message in it meant only for her.",
-        body: [
-          "Mira had grown up counting waves the way other children counted sheep. Her father kept the light on Innish Point, and she kept everything else: the log book, the weather, the hours between his rounds up the spiral stair. By nine she could tell a storm swell from a wind chop with her eyes shut, just from the rhythm of it against the rocks.",
-          "It was in her thirteenth winter that the sea began to write to her. Not in words — nothing so simple. In pauses. A long wave, then a short one, then two long ones, over and over, on nights when the water should have been random as breathing. She timed it with her father's pocket watch until her hands went numb, and when she finally wrote the pattern down as dots and dashes, it spelled a single word, over and over, patient as a tide: LISTEN.",
-          "She didn't tell her father. Some things, she felt, were addressed to her specifically, the way a letter has one name on the envelope. So she sat on the rocks each evening with her knees pulled to her chest and she listened, and the sea, having gotten her attention, began to tell her other things — where the fish had gone, which nights to keep the small boats in, and once, three days early, that a ship was coming that did not know these waters at all.",
-          "Her father never learned why his daughter began waking him at odd hours, insisting he light the second lamp, the one they never used except in the worst weather. He only noticed, over the years, that the point never lost a boat on her watch, and that she never once explained herself further than: the water asked me to."
-        ]
-      },
-      {
-        title: "The Girl Who Borrowed Colors",
-        time: "4 min",
-        teaser: "In a village where everyone is born seeing only grey, one girl finds she can lend her neighbors an hour of color at a time.",
-        body: [
-          "Nobody in Aldwick saw color, and nobody minded very much, since a world entirely in grey is still a whole world, full of shape and shadow and the particular silver of rain. Ren had grown up like everyone else, until her eleventh birthday, when she woke to find the inside of her own eyelids full of a deep, ringing red, and no one to explain it to.",
-          "She discovered the lending by accident, holding her cousin's hand during a thunderstorm and feeling the color pour out of her like heat leaving a stove. Her cousin gasped and said the lightning had gone gold at the edges, just for a second, and then it was grey again, and Ren understood she had given something away and gotten it back empty.",
-          "She was careful with it after that, the way you're careful with a candle in a dry house. She lent the butcher an hour of green so he could see his own garden properly, once, before he died. She lent the schoolteacher blue, for the sky, on the day her husband left. She never lent herself more than a few minutes at a time, because giving it away always emptied her a little longer than she expected.",
-          "By the time she was old and mostly grey herself, worn thin from decades of lending, the whole village had seen, briefly, in patches, most of what color was for. None of them could describe it afterward in words that meant anything. They only agreed that Ren's hands were always a little warm, and that they missed her, badly, the winter she finally ran out."
-        ]
-      },
-      {
-        title: "Grandmother's Garden of Time",
-        time: "6 min",
-        teaser: "Every plant in the old woman's garden blooms on a different day than the calendar says — and each bloom seems to know something before it happens.",
-        body: [
-          "The garden behind Nonna Elsa's house never kept the seasons properly, a fact the neighbors attributed to good soil and better luck. The roses bloomed in November. The tulips came up under snow and did not seem to mind it. Elsa never explained this to anyone, mostly because no one ever thought to ask a ninety-year-old woman why her garden was strange, assuming instead that it was simply old, like her.",
-          "Her granddaughter Pia noticed the true pattern only the summer she turned sixteen: the garden did not bloom out of season. It bloomed exactly one week before something worth remembering happened. The peonies came up early the week before her parents announced they were moving. The night-blooming jasmine opened, inexplicably, in broad daylight, the week before her grandfather's photograph came down off the mantel because Elsa finally felt ready to put it away.",
-          "Pia asked, eventually, straight out, whether Elsa had planted the garden this way on purpose. Elsa laughed for a long time at that, the kind of laugh that has a little grief folded into it, and said she had planted an ordinary garden forty years ago, and it had simply started doing this on its own sometime after her husband died, as if the earth itself had decided someone in the family ought to get a week's warning about the things that mattered.",
-          "She told Pia to keep the garden after she was gone, and to trust it, and not to go looking too hard for reasons. Pia has kept it eleven years now. She has learned not to ask the roses questions. She only checks them each morning, the way you'd check a barometer, and packs accordingly."
-        ]
-      }
-    ]
+    "mood": "wonder",
+    "title": "The Weight of Water",
+    "time": "5 min",
+    "teaser": "A lighthouse keeper's daughter learns to read the tide the way other children read books \u2014 and finds a message in it meant only for her.",
+    "body": [
+      "Mira had grown up counting waves the way other children counted sheep. Her father kept the light on Innish Point, and she kept everything else: the log book, the weather, the hours between his rounds up the spiral stair. By nine she could tell a storm swell from a wind chop with her eyes shut, just from the rhythm of it against the rocks.",
+      "It was in her thirteenth winter that the sea began to write to her. Not in words \u2014 nothing so simple. In pauses. A long wave, then a short one, then two long ones, over and over, on nights when the water should have been random as breathing. She timed it with her father's pocket watch until her hands went numb, and when she finally wrote the pattern down as dots and dashes, it spelled a single word, over and over, patient as a tide: LISTEN.",
+      "She didn't tell her father. Some things, she felt, were addressed to her specifically, the way a letter has one name on the envelope. So she sat on the rocks each evening with her knees pulled to her chest and she listened, and the sea, having gotten her attention, began to tell her other things \u2014 where the fish had gone, which nights to keep the small boats in, and once, three days early, that a ship was coming that did not know these waters at all.",
+      "Her father never learned why his daughter began waking him at odd hours, insisting he light the second lamp, the one they never used except in the worst weather. He only noticed, over the years, that the point never lost a boat on her watch, and that she never once explained herself further than: the water asked me to."
+    ],
+    "tags": [
+      "family",
+      "the sea"
+    ],
+    "image": "",
+    "status": "published"
   },
   {
-    mood: "mystery",
-    label: "Mystery",
-    desc: "Somebody knows more than they're saying.",
-    stories: [
-      {
-        title: "The Clockmaker's Debt",
-        time: "6 min",
-        teaser: "Every clock in town runs four minutes fast — except the one clockmaker who died owing everyone an explanation.",
-        body: [
-          "It was Inspector Rill who first noticed it, mostly by accident: the church bell struck noon four minutes before the bakery's ovens finished, and the bakery's ovens finished four minutes before the trains, which never ran early, and yet somehow did. She checked her own watch against all three and found it agreed with none of them, and being the kind of person who could not leave a discrepancy alone, she began to ask around.",
-          "The town's clocks, it turned out, had all been serviced within the last year by the same man — old Bertrand Voss, who had died in his workshop that spring with his tools laid out in a neat row and no note of any kind. Every clock he'd touched now ran precisely four minutes ahead of true time. Every clock. The ones he hadn't touched kept perfect time, same as always.",
-          "Rill went through his ledgers and found nothing sinister, only decades of small repairs, fair prices, a life spent on other people's time rather than his own. It was his apprentice, a quiet boy named Ansel, who finally told her what she hadn't asked directly: that four minutes was exactly how long it had taken, by Bertrand's own count, for the fire brigade to reach his sister's house the year it burned, forty years before, four minutes too late for anyone inside.",
-          "He had spent the rest of his life, apparently, trying to buy the town back those four minutes, one clock at a time, quietly, without asking anyone's permission or explaining himself even once. Rill closed the file without correcting a single clock. Some debts, she decided, were meant to be paid exactly the way they'd been offered — and it was not her place to make the town run late again."
-        ]
-      },
-      {
-        title: "The Uninvited Guestbook",
-        time: "5 min",
-        teaser: "A bed-and-breakfast guestbook has an entry for tonight, written in handwriting no guest recognizes, dated tomorrow.",
-        body: [
-          "The Hollis Inn had kept a guestbook since 1962, a fat leather thing by the check-in desk that Nadia paged through most nights out of boredom more than curiosity. It was on a slow Tuesday in March that she found the entry for the following evening, in loose, looping handwriting she didn't recognize, signed only 'a friend of the house,' describing a dinner that hadn't happened yet in detail that made her skin prickle.",
-          "She assumed a joke, a guest with too much time and a strange sense of humor, until the next evening unfolded exactly as written — down to a spilled glass of wine at table four and a heated argument about directions between a young couple who arrived, as predicted, forty minutes late. Nadia tore the page out that night, certain that removing it would unmake whatever it had described.",
-          "A new entry appeared two days later in the same hand, for the following Thursday, as if nothing had been torn out at all. Nadia began keeping the pages instead of destroying them, filing them in a drawer, and comparing them against what actually happened, and found they were never wrong, only ever a day ahead, written by someone who had apparently never once been seen entering or leaving the inn.",
-          "She still works the desk at Hollis Inn. She has stopped trying to catch the guest in the act, and started, instead, quietly rearranging the dinner reservations to avoid the worst entries when she can — a small, private editing of tomorrow, which she has never told a soul about, least of all the inn's actual owners."
-        ]
-      },
-      {
-        title: "Three Doors Down",
-        time: "6 min",
-        teaser: "A woman keeps receiving her neighbor's mail — for a neighbor who, according to every record, has never lived there.",
-        body: [
-          "The letters began arriving for a Mr. Aubrey Finch, three doors down from Petra's building, care of her own address, which struck her as an easy postal error until she checked the building records and found no Aubrey Finch had ever been registered at either address, not now, not in the twenty years the building had stood.",
-          "She might have simply returned the letters to sender, except that none of them had a return address, only a postmark from a town she couldn't find on any map, and a habit of arriving exactly on the days she was thinking, for no reason she could name, about a man she had never met. She started, against her better judgment, opening them.",
-          "They were ordinary letters — a cousin's wedding update, a complaint about a landlord, a recipe for a lemon cake — addressed to a life that seemed to almost, but not quite, overlap with her own street, her own weather, her own small complaints. She began writing back, care of the same nonexistent return address, mostly to see what would happen, and mostly because Aubrey Finch's life, whoever he was, sounded lonelier than hers, and it seemed unkind to leave a letter unanswered.",
-          "She has received forty-one letters now and sent thirty-eight replies. She has stopped trying to explain it to anyone, including herself, and has instead simply made a little room in her week for Aubrey Finch, three doors down, in whatever town or year or reality he is actually writing from, and finds she does not much want the mystery solved, only kept."
-        ]
-      }
-    ]
+    "mood": "wonder",
+    "title": "The Girl Who Borrowed Colors",
+    "time": "4 min",
+    "teaser": "In a village where everyone is born seeing only grey, one girl finds she can lend her neighbors an hour of color at a time.",
+    "body": [
+      "Nobody in Aldwick saw color, and nobody minded very much, since a world entirely in grey is still a whole world, full of shape and shadow and the particular silver of rain. Ren had grown up like everyone else, until her eleventh birthday, when she woke to find the inside of her own eyelids full of a deep, ringing red, and no one to explain it to.",
+      "She discovered the lending by accident, holding her cousin's hand during a thunderstorm and feeling the color pour out of her like heat leaving a stove. Her cousin gasped and said the lightning had gone gold at the edges, just for a second, and then it was grey again, and Ren understood she had given something away and gotten it back empty.",
+      "She was careful with it after that, the way you're careful with a candle in a dry house. She lent the butcher an hour of green so he could see his own garden properly, once, before he died. She lent the schoolteacher blue, for the sky, on the day her husband left. She never lent herself more than a few minutes at a time, because giving it away always emptied her a little longer than she expected.",
+      "By the time she was old and mostly grey herself, worn thin from decades of lending, the whole village had seen, briefly, in patches, most of what color was for. None of them could describe it afterward in words that meant anything. They only agreed that Ren's hands were always a little warm, and that they missed her, badly, the winter she finally ran out."
+    ],
+    "tags": [
+      "memory"
+    ],
+    "image": "",
+    "status": "published"
   },
   {
-    mood: "horror",
-    label: "Horror",
-    desc: "Best read with the lights still on.",
-    stories: [
-      {
-        title: "Static",
-        time: "6 min",
-        teaser: "The radio in the basement hasn't worked in years. Lately, it's been trying very hard to fix that.",
-        body: [
-          "The radio had belonged to Dana's grandfather, a squat brown Zenith with a cracked dial, and it had not made a sound since before she was born. She kept it in the basement because it was too heavy to move twice and too ugly to put upstairs, and for four years it sat by the water heater doing nothing at all, which was exactly what she expected of it.",
-          "Then, in October, it began to hum. Not loudly — a thread of static so faint she first mistook it for the furnace. She unplugged it. The humming continued. She took the batteries out, though it had never run on batteries, and the humming got, if anything, a little clearer, like someone in another room turning down their own noise to hear her better.",
-          "By the second week the static had shape to it. Not quite words. The rise and fall of a sentence with the words sanded off, the way you can tell someone is asking a question through a wall without hearing what it is. She stopped going downstairs to do laundry. She told herself this was reasonable, the way you tell yourself lots of things are reasonable at eleven at night alone in a house that used to belong to somebody else.",
-          "On the fifteenth night the static resolved, all at once, into a single clear sentence, spoken in a voice she almost recognized: 'You've gotten so tall.' She stood very still at the top of the basement stairs for a long time. Then she went down, because it had, after all these years, finally said something to her instead of just at her, and some part of her — the part that still missed him — wanted very badly to answer."
-        ]
-      },
-      {
-        title: "The Mirror Keeps the Change",
-        time: "5 min",
-        teaser: "The antique mirror in the hallway gives back your reflection a half-second late. That half-second is the problem.",
-        body: [
-          "The mirror had come with the house, too heavy and too ugly to be worth moving, and for the first month Leah didn't think about it at all beyond noting, vaguely, that it needed cleaning. It was her husband who first mentioned the delay — that his reflection seemed to finish nodding just after he had, a small lag he assumed was tiredness.",
-          "Leah started timing it out of idle curiosity, standing in the hallway waving her arms like a fool, and confirmed it: a half-second gap, consistent, unmistakable, that no mirror should have. She told herself it was a trick of the old, slightly warped glass. She stopped telling herself that the week the reflection began finishing gestures she hadn't made yet.",
-          "It was small at first — her mirrored hand reaching a half-second before her real one did, as if catching up to a decision she was still making. Then it began anticipating things further out: her reflection turning toward the front door a full two seconds before the knock actually came, every single time, as though it had already lived the next moment and was simply waiting, politely, for her to catch up.",
-          "She has not replaced the mirror. She has, instead, started watching it before she does anything important, the way you'd check tomorrow's weather, because it is always right, and always half a second ahead, and the one time she tried covering it with a sheet, she woke at three in the morning to find the sheet folded neatly on the floor, and the mirror bare, and her own reflection already waiting for her, already looking toward the hallway, a half-second before she'd even opened her eyes."
-        ]
-      },
-      {
-        title: "Knock Twice",
-        time: "5 min",
-        teaser: "The house rule was simple: if someone knocks once, don't answer. It had never come up before tonight.",
-        body: [
-          "The rule had been in the family so long nobody remembered starting it: one knock, ignore it; two knocks, open the door. It was the kind of superstition Callum had grown up with the way other kids grew up with not stepping on cracks, arbitrary and unquestioned, right up until the night someone actually knocked once on the cabin door and then, after a long pause, knocked once again.",
-          "He sat very still at the kitchen table, doing the arithmetic his whole family had apparently agreed on decades ago without ever explaining the reasoning: two knocks, spaced far apart, are not the same as two knocks together. He did not know which rule applied to a gap that long. He found, sitting there in the dark with his heart going hard against his ribs, that he did not actually want to find out.",
-          "The knocking continued at long, patient intervals for the better part of an hour — one knock, silence, one knock again — as if whatever was outside had also grown up with a rule, a different rule, and was simply waiting for Callum to make the mistake his family's superstition had always warned him against. Around one in the morning it stopped, all at once, mid-interval, the way a held breath stops.",
-          "In the morning he found no footprints in the frost on the porch, no marks on the door, nothing at all except, carved crudely into the inside of the doorframe where no one would see it without looking, two small marks that had not been there the day before, and looked, he thought, uncomfortably like a tally being kept of exactly how many knocks it would take."
-        ]
-      }
-    ]
+    "mood": "wonder",
+    "title": "Grandmother's Garden of Time",
+    "time": "6 min",
+    "teaser": "Every plant in the old woman's garden blooms on a different day than the calendar says \u2014 and each bloom seems to know something before it happens.",
+    "body": [
+      "The garden behind Nonna Elsa's house never kept the seasons properly, a fact the neighbors attributed to good soil and better luck. The roses bloomed in November. The tulips came up under snow and did not seem to mind it. Elsa never explained this to anyone, mostly because no one ever thought to ask a ninety-year-old woman why her garden was strange, assuming instead that it was simply old, like her.",
+      "Her granddaughter Pia noticed the true pattern only the summer she turned sixteen: the garden did not bloom out of season. It bloomed exactly one week before something worth remembering happened. The peonies came up early the week before her parents announced they were moving. The night-blooming jasmine opened, inexplicably, in broad daylight, the week before her grandfather's photograph came down off the mantel because Elsa finally felt ready to put it away.",
+      "Pia asked, eventually, straight out, whether Elsa had planted the garden this way on purpose. Elsa laughed for a long time at that, the kind of laugh that has a little grief folded into it, and said she had planted an ordinary garden forty years ago, and it had simply started doing this on its own sometime after her husband died, as if the earth itself had decided someone in the family ought to get a week's warning about the things that mattered.",
+      "She told Pia to keep the garden after she was gone, and to trust it, and not to go looking too hard for reasons. Pia has kept it eleven years now. She has learned not to ask the roses questions. She only checks them each morning, the way you'd check a barometer, and packs accordingly."
+    ],
+    "tags": [
+      "family"
+    ],
+    "image": "",
+    "status": "published"
   },
   {
-    mood: "romance",
-    label: "Romance",
-    desc: "For the ones who stayed, and the ones who left.",
-    stories: [
-      {
-        title: "Letters to No One",
-        time: "5 min",
-        teaser: "After she moves to another country, he keeps writing letters to her old address, just to have somewhere to put the day.",
-        body: [
-          "The apartment above the bakery had a new tenant within two months, a fact Julian knew because he still walked past it most evenings on his way home, and one evening in March he saw a stranger's coat on the hook by the window where hers used to hang. He kept writing anyway. Not to her new address — he had that, and used it dutifully, twice a month, careful letters about weather and work. These other letters were different. These he wrote to the old apartment, and never sent.",
-          "It started as a joke he made only to himself: a way of finishing the sentence he used to say out loud to her at the end of every day, the small useless report of how it had gone. Then it became a drawer full of envelopes with no stamps, sealed and dated and never mailed, because where would you even send a letter like that — to a version of her that still lived four blocks away, that still knew what his footsteps sounded like on the stairs.",
-          "He told her about the drawer eventually, on a video call at two in the morning her time, half as a confession and half hoping she'd laugh. She didn't laugh. She asked him to read her one, and he did, embarrassed, a short one about a dog he'd seen that reminded him of nothing in particular except that she would have liked it.",
-          "After that she asked for one every week, and he kept writing them to no one, and reading them to her, and it became, in its odd backward way, the most honest correspondence either of them had ever kept — proof that the version of him who missed her had somewhere to put the missing, instead of carrying it around all day like a coin in a closed fist."
-        ]
-      },
-      {
-        title: "The Recipe She Left Behind",
-        time: "4 min",
-        teaser: "A handwritten recipe card is missing one ingredient — and finding it turns out to take him twenty years.",
-        body: [
-          "His grandmother's tomato sauce had one line on the recipe card so faded he could never read it, a single ingredient smudged out by decades of flour-dusted hands, and for years Tomas simply left it out, and the sauce was good anyway, and he told himself that was the end of it.",
-          "It was his wife who wouldn't let it go, turning the card over at every family dinner, holding it up to lamps, joking that she'd marry him properly once he solved his grandmother's mystery ingredient, which was, of course, already a joke, since they were already married, and had been for six years by the time she said it seriously instead.",
-          "He spent an embarrassing amount of that sixth year writing to cousins in three countries, describing the smudge, the handwriting, the exact shade of the stain, until an elderly aunt in Palermo finally wrote back to say, almost offhand, that it was probably a splash of the wine his grandmother always poured into the pot and then, out of some old habit, always crossed out afterward, because she'd once been told good cooks don't put spirits in their sauce and never quite believed it, but never quite disobeyed it either.",
-          "Tomas adds the wine now, a small illicit splash, and thinks of it as the one instruction his grandmother gave and then immediately regretted giving, and his wife says it's the only ingredient in the whole recipe that actually needed twenty years to find, which is, she says, exactly how long the good ones take."
-        ]
-      },
-      {
-        title: "Two Trains, One Platform",
-        time: "5 min",
-        teaser: "Every Tuesday for a year, they've caught each other's eye across the platform, boarding trains going opposite ways.",
-        body: [
-          "Nora took the 8:14 into the city and Idris took the 8:16 out of it, and for the better part of a year the only thing they shared was four minutes on the same platform every Tuesday, standing near enough to notice each other and far enough that neither had ever said a word. She knew he always checked his watch twice. He knew she always finished her coffee exactly as her train pulled in.",
-          "It became, without either of them deciding it should, the best four minutes of both their weeks. Neither wanted to ruin it by making it into something that could be gotten wrong — a bad conversation, an awkward number exchanged, the ordinary collapse of a nice thing into a real one. So they kept it as it was: a nod, sometimes a smile, two trains pulling away from each other in opposite directions.",
-          "It was a transit strike, of all things, that finally broke the pattern — both their usual trains cancelled on the same freezing Tuesday, both of them stranded on the same platform for forty unplanned minutes with nothing left to do but talk, which they did, badly and then well, discovering in short order that they lived four streets apart and had, for a year, been walking distance from a version of this conversation the whole time.",
-          "They still take their separate trains most days, because Nora's job is still in the city and Idris's is still out of it, but Tuesdays now end with dinner instead of just a nod, and neither of them has ever quite gotten over the specific luck of a year spent almost missing each other on purpose."
-        ]
-      }
-    ]
+    "mood": "mystery",
+    "title": "The Clockmaker's Debt",
+    "time": "6 min",
+    "teaser": "Every clock in town runs four minutes fast \u2014 except the one clockmaker who died owing everyone an explanation.",
+    "body": [
+      "It was Inspector Rill who first noticed it, mostly by accident: the church bell struck noon four minutes before the bakery's ovens finished, and the bakery's ovens finished four minutes before the trains, which never ran early, and yet somehow did. She checked her own watch against all three and found it agreed with none of them, and being the kind of person who could not leave a discrepancy alone, she began to ask around.",
+      "The town's clocks, it turned out, had all been serviced within the last year by the same man \u2014 old Bertrand Voss, who had died in his workshop that spring with his tools laid out in a neat row and no note of any kind. Every clock he'd touched now ran precisely four minutes ahead of true time. Every clock. The ones he hadn't touched kept perfect time, same as always.",
+      "Rill went through his ledgers and found nothing sinister, only decades of small repairs, fair prices, a life spent on other people's time rather than his own. It was his apprentice, a quiet boy named Ansel, who finally told her what she hadn't asked directly: that four minutes was exactly how long it had taken, by Bertrand's own count, for the fire brigade to reach his sister's house the year it burned, forty years before, four minutes too late for anyone inside.",
+      "He had spent the rest of his life, apparently, trying to buy the town back those four minutes, one clock at a time, quietly, without asking anyone's permission or explaining himself even once. Rill closed the file without correcting a single clock. Some debts, she decided, were meant to be paid exactly the way they'd been offered \u2014 and it was not her place to make the town run late again."
+    ],
+    "tags": [
+      "grief"
+    ],
+    "image": "",
+    "status": "published"
   },
   {
-    mood: "adventure",
-    label: "Adventure",
-    desc: "Roads that go somewhere they shouldn't.",
-    stories: [
-      {
-        title: "The Cartographer's Mistake",
-        time: "7 min",
-        teaser: "A young mapmaker draws a mountain pass that isn't on any survey — and then a merchant swears he walked it home.",
-        body: [
-          "Elin was the third-best cartographer in Verrow, which meant she got the unglamorous commissions: the flood plains, the disputed fence lines, the roads no one important used. So when she was asked to update the eastern range maps for the tax office, she expected three boring weeks and a decent fee, and for the first two and a half weeks, that is exactly what she got.",
-          "On the last afternoon, tired and half-dreaming over her instruments, she drew a pass through the Verrow Needles that did not exist. She knew it didn't exist; she had surveyed those peaks herself and they were solid granite for eleven unbroken miles. But her pen moved anyway, sketching a notch between two spires, a thin trail switch-backing down into a valley she had never seen, and she was too tired to question her own hand until it was done.",
-          "She meant to scrape it off the vellum in the morning. Instead, a wool merchant named Costa arrived at her door before breakfast, mud to his knees, asking who had told the tax office about the new shortcut through the Needles — he'd saved four days coming home, he said, through a pass with a waterfall shaped like a bent elbow and a valley full of white moths. He described the notch between the spires exactly as she had drawn it.",
-          "Elin did not tell him she had invented it the evening before. She only asked, very carefully, whether he'd mind her coming along next time — and whether he thought the pass would still be there if she looked for it herself, or whether it only existed for as long as someone needed to believe in it. Costa laughed and said he hadn't the faintest idea, and that was, he thought, the best part of the whole business."
-        ]
-      },
-      {
-        title: "Left Turn at Midnight",
-        time: "6 min",
-        teaser: "A long-haul driver picks up a hitchhiker who gives directions to a town that stopped existing thirty years ago.",
-        body: [
-          "Cole picked up hitchhikers against every piece of advice he'd ever gotten, mostly because three in the morning on Route 9 got lonelier than any radio station could fix. The one he picked up that night was an older man in a canvas coat far too heavy for the season, who got in without much conversation and said only, when Cole asked where to, 'Aldermere. Left at the water tower.'",
-          "Cole knew Route 9 the way some men know their own hands, and he was fairly sure there hadn't been a town called Aldermere in his lifetime, water tower or not. But the man seemed certain, and it was a slow night, and Cole had learned that the fastest way through an awkward silence was to just drive, so he drove, and at the place where a water tower really did rise up out of the dark, rusted and unused, he turned left onto a road he'd genuinely never noticed before.",
-          "The road went on longer than it had any right to, past fields Cole didn't recognize despite having driven this stretch for eleven years, until it ended, unglamorously, at a gate and a chain-link fence and a faded sign that read ALDERMERE RESERVOIR — TOWN RELOCATED 1994. Cole sat with the engine idling, unsure what to say to a man who'd just directed him to a town that had been underwater for three decades.",
-          "When he turned around, the passenger seat was empty, the door still shut, the seatbelt still buckled around nothing at all. Cole didn't scream, exactly. He drove back to the water tower very carefully, obeying every speed limit sign as if the road itself were watching, and he never picked up another hitchhiker again — though for years afterward, he kept an old canvas coat folded on the passenger seat, in case anyone from Aldermere ever needed a ride back."
-        ]
-      },
-      {
-        title: "The Last Ferry to Nowhere",
-        time: "6 min",
-        teaser: "The midnight ferry only runs when the harbor master decides the weather is right — and it never quite lands where the timetable says.",
-        body: [
-          "Every coastal town has one boat nobody quite trusts, and in Wrenmouth it was the midnight ferry, run by an old harbor master named Silas who posted no fixed schedule, only a chalkboard that occasionally read TONIGHT and was otherwise blank for weeks at a time. Bea had lived in Wrenmouth nineteen years without ever once seeing it sail.",
-          "She boarded it, finally, the week her mother died, mostly because she needed to be somewhere that wasn't the funeral home, and Silas took her fare without a word and cast off into a fog so thick the harbor lights vanished behind them within a minute. The timetable, tacked crookedly by the wheelhouse, promised a forty-minute crossing to Dunmore Isle. They were at sea for almost three hours.",
-          "When they finally docked, it was not Dunmore Isle. It was a smaller, greener place with no name Bea could find on any chart, where an old woman on the pier took one look at her and said, gently, that the ferry only ever lands where a passenger most needs to be, whether or not that matches where they meant to go, and that Bea should sit a while before deciding whether she was ready to go back.",
-          "She sat for what felt like an hour and turned out, by the ferry's clock, to be almost a full day. She has never found that island again on any map, has never asked Silas where exactly his boat actually goes, and has instead simply started trusting the chalkboard — because the one time she needed to be somewhere other than where she was, the ferry, against every printed timetable, had known exactly where that was before she did."
-        ]
-      }
-    ]
+    "mood": "mystery",
+    "title": "The Uninvited Guestbook",
+    "time": "5 min",
+    "teaser": "A bed-and-breakfast guestbook has an entry for tonight, written in handwriting no guest recognizes, dated tomorrow.",
+    "body": [
+      "The Hollis Inn had kept a guestbook since 1962, a fat leather thing by the check-in desk that Nadia paged through most nights out of boredom more than curiosity. It was on a slow Tuesday in March that she found the entry for the following evening, in loose, looping handwriting she didn't recognize, signed only 'a friend of the house,' describing a dinner that hadn't happened yet in detail that made her skin prickle.",
+      "She assumed a joke, a guest with too much time and a strange sense of humor, until the next evening unfolded exactly as written \u2014 down to a spilled glass of wine at table four and a heated argument about directions between a young couple who arrived, as predicted, forty minutes late. Nadia tore the page out that night, certain that removing it would unmake whatever it had described.",
+      "A new entry appeared two days later in the same hand, for the following Thursday, as if nothing had been torn out at all. Nadia began keeping the pages instead of destroying them, filing them in a drawer, and comparing them against what actually happened, and found they were never wrong, only ever a day ahead, written by someone who had apparently never once been seen entering or leaving the inn.",
+      "She still works the desk at Hollis Inn. She has stopped trying to catch the guest in the act, and started, instead, quietly rearranging the dinner reservations to avoid the worst entries when she can \u2014 a small, private editing of tomorrow, which she has never told a soul about, least of all the inn's actual owners."
+    ],
+    "tags": [
+      "small towns"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "mystery",
+    "title": "Three Doors Down",
+    "time": "6 min",
+    "teaser": "A woman keeps receiving her neighbor's mail \u2014 for a neighbor who, according to every record, has never lived there.",
+    "body": [
+      "The letters began arriving for a Mr. Aubrey Finch, three doors down from Petra's building, care of her own address, which struck her as an easy postal error until she checked the building records and found no Aubrey Finch had ever been registered at either address, not now, not in the twenty years the building had stood.",
+      "She might have simply returned the letters to sender, except that none of them had a return address, only a postmark from a town she couldn't find on any map, and a habit of arriving exactly on the days she was thinking, for no reason she could name, about a man she had never met. She started, against her better judgment, opening them.",
+      "They were ordinary letters \u2014 a cousin's wedding update, a complaint about a landlord, a recipe for a lemon cake \u2014 addressed to a life that seemed to almost, but not quite, overlap with her own street, her own weather, her own small complaints. She began writing back, care of the same nonexistent return address, mostly to see what would happen, and mostly because Aubrey Finch's life, whoever he was, sounded lonelier than hers, and it seemed unkind to leave a letter unanswered.",
+      "She has received forty-one letters now and sent thirty-eight replies. She has stopped trying to explain it to anyone, including herself, and has instead simply made a little room in her week for Aubrey Finch, three doors down, in whatever town or year or reality he is actually writing from, and finds she does not much want the mystery solved, only kept."
+    ],
+    "tags": [
+      "letters"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "horror",
+    "title": "Static",
+    "time": "6 min",
+    "teaser": "The radio in the basement hasn't worked in years. Lately, it's been trying very hard to fix that.",
+    "body": [
+      "The radio had belonged to Dana's grandfather, a squat brown Zenith with a cracked dial, and it had not made a sound since before she was born. She kept it in the basement because it was too heavy to move twice and too ugly to put upstairs, and for four years it sat by the water heater doing nothing at all, which was exactly what she expected of it.",
+      "Then, in October, it began to hum. Not loudly \u2014 a thread of static so faint she first mistook it for the furnace. She unplugged it. The humming continued. She took the batteries out, though it had never run on batteries, and the humming got, if anything, a little clearer, like someone in another room turning down their own noise to hear her better.",
+      "By the second week the static had shape to it. Not quite words. The rise and fall of a sentence with the words sanded off, the way you can tell someone is asking a question through a wall without hearing what it is. She stopped going downstairs to do laundry. She told herself this was reasonable, the way you tell yourself lots of things are reasonable at eleven at night alone in a house that used to belong to somebody else.",
+      "On the fifteenth night the static resolved, all at once, into a single clear sentence, spoken in a voice she almost recognized: 'You've gotten so tall.' She stood very still at the top of the basement stairs for a long time. Then she went down, because it had, after all these years, finally said something to her instead of just at her, and some part of her \u2014 the part that still missed him \u2014 wanted very badly to answer."
+    ],
+    "tags": [
+      "family"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "horror",
+    "title": "The Mirror Keeps the Change",
+    "time": "5 min",
+    "teaser": "The antique mirror in the hallway gives back your reflection a half-second late. That half-second is the problem.",
+    "body": [
+      "The mirror had come with the house, too heavy and too ugly to be worth moving, and for the first month Leah didn't think about it at all beyond noting, vaguely, that it needed cleaning. It was her husband who first mentioned the delay \u2014 that his reflection seemed to finish nodding just after he had, a small lag he assumed was tiredness.",
+      "Leah started timing it out of idle curiosity, standing in the hallway waving her arms like a fool, and confirmed it: a half-second gap, consistent, unmistakable, that no mirror should have. She told herself it was a trick of the old, slightly warped glass. She stopped telling herself that the week the reflection began finishing gestures she hadn't made yet.",
+      "It was small at first \u2014 her mirrored hand reaching a half-second before her real one did, as if catching up to a decision she was still making. Then it began anticipating things further out: her reflection turning toward the front door a full two seconds before the knock actually came, every single time, as though it had already lived the next moment and was simply waiting, politely, for her to catch up.",
+      "She has not replaced the mirror. She has, instead, started watching it before she does anything important, the way you'd check tomorrow's weather, because it is always right, and always half a second ahead, and the one time she tried covering it with a sheet, she woke at three in the morning to find the sheet folded neatly on the floor, and the mirror bare, and her own reflection already waiting for her, already looking toward the hallway, a half-second before she'd even opened her eyes."
+    ],
+    "tags": [
+      "home"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "horror",
+    "title": "Knock Twice",
+    "time": "5 min",
+    "teaser": "The house rule was simple: if someone knocks once, don't answer. It had never come up before tonight.",
+    "body": [
+      "The rule had been in the family so long nobody remembered starting it: one knock, ignore it; two knocks, open the door. It was the kind of superstition Callum had grown up with the way other kids grew up with not stepping on cracks, arbitrary and unquestioned, right up until the night someone actually knocked once on the cabin door and then, after a long pause, knocked once again.",
+      "He sat very still at the kitchen table, doing the arithmetic his whole family had apparently agreed on decades ago without ever explaining the reasoning: two knocks, spaced far apart, are not the same as two knocks together. He did not know which rule applied to a gap that long. He found, sitting there in the dark with his heart going hard against his ribs, that he did not actually want to find out.",
+      "The knocking continued at long, patient intervals for the better part of an hour \u2014 one knock, silence, one knock again \u2014 as if whatever was outside had also grown up with a rule, a different rule, and was simply waiting for Callum to make the mistake his family's superstition had always warned him against. Around one in the morning it stopped, all at once, mid-interval, the way a held breath stops.",
+      "In the morning he found no footprints in the frost on the porch, no marks on the door, nothing at all except, carved crudely into the inside of the doorframe where no one would see it without looking, two small marks that had not been there the day before, and looked, he thought, uncomfortably like a tally being kept of exactly how many knocks it would take."
+    ],
+    "tags": [
+      "superstition"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "romance",
+    "title": "Letters to No One",
+    "time": "5 min",
+    "teaser": "After she moves to another country, he keeps writing letters to her old address, just to have somewhere to put the day.",
+    "body": [
+      "The apartment above the bakery had a new tenant within two months, a fact Julian knew because he still walked past it most evenings on his way home, and one evening in March he saw a stranger's coat on the hook by the window where hers used to hang. He kept writing anyway. Not to her new address \u2014 he had that, and used it dutifully, twice a month, careful letters about weather and work. These other letters were different. These he wrote to the old apartment, and never sent.",
+      "It started as a joke he made only to himself: a way of finishing the sentence he used to say out loud to her at the end of every day, the small useless report of how it had gone. Then it became a drawer full of envelopes with no stamps, sealed and dated and never mailed, because where would you even send a letter like that \u2014 to a version of her that still lived four blocks away, that still knew what his footsteps sounded like on the stairs.",
+      "He told her about the drawer eventually, on a video call at two in the morning her time, half as a confession and half hoping she'd laugh. She didn't laugh. She asked him to read her one, and he did, embarrassed, a short one about a dog he'd seen that reminded him of nothing in particular except that she would have liked it.",
+      "After that she asked for one every week, and he kept writing them to no one, and reading them to her, and it became, in its odd backward way, the most honest correspondence either of them had ever kept \u2014 proof that the version of him who missed her had somewhere to put the missing, instead of carrying it around all day like a coin in a closed fist."
+    ],
+    "tags": [
+      "letters",
+      "distance"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "romance",
+    "title": "The Recipe She Left Behind",
+    "time": "4 min",
+    "teaser": "A handwritten recipe card is missing one ingredient \u2014 and finding it turns out to take him twenty years.",
+    "body": [
+      "His grandmother's tomato sauce had one line on the recipe card so faded he could never read it, a single ingredient smudged out by decades of flour-dusted hands, and for years Tomas simply left it out, and the sauce was good anyway, and he told himself that was the end of it.",
+      "It was his wife who wouldn't let it go, turning the card over at every family dinner, holding it up to lamps, joking that she'd marry him properly once he solved his grandmother's mystery ingredient, which was, of course, already a joke, since they were already married, and had been for six years by the time she said it seriously instead.",
+      "He spent an embarrassing amount of that sixth year writing to cousins in three countries, describing the smudge, the handwriting, the exact shade of the stain, until an elderly aunt in Palermo finally wrote back to say, almost offhand, that it was probably a splash of the wine his grandmother always poured into the pot and then, out of some old habit, always crossed out afterward, because she'd once been told good cooks don't put spirits in their sauce and never quite believed it, but never quite disobeyed it either.",
+      "Tomas adds the wine now, a small illicit splash, and thinks of it as the one instruction his grandmother gave and then immediately regretted giving, and his wife says it's the only ingredient in the whole recipe that actually needed twenty years to find, which is, she says, exactly how long the good ones take."
+    ],
+    "tags": [
+      "family",
+      "food"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "romance",
+    "title": "Two Trains, One Platform",
+    "time": "5 min",
+    "teaser": "Every Tuesday for a year, they've caught each other's eye across the platform, boarding trains going opposite ways.",
+    "body": [
+      "Nora took the 8:14 into the city and Idris took the 8:16 out of it, and for the better part of a year the only thing they shared was four minutes on the same platform every Tuesday, standing near enough to notice each other and far enough that neither had ever said a word. She knew he always checked his watch twice. He knew she always finished her coffee exactly as her train pulled in.",
+      "It became, without either of them deciding it should, the best four minutes of both their weeks. Neither wanted to ruin it by making it into something that could be gotten wrong \u2014 a bad conversation, an awkward number exchanged, the ordinary collapse of a nice thing into a real one. So they kept it as it was: a nod, sometimes a smile, two trains pulling away from each other in opposite directions.",
+      "It was a transit strike, of all things, that finally broke the pattern \u2014 both their usual trains cancelled on the same freezing Tuesday, both of them stranded on the same platform for forty unplanned minutes with nothing left to do but talk, which they did, badly and then well, discovering in short order that they lived four streets apart and had, for a year, been walking distance from a version of this conversation the whole time.",
+      "They still take their separate trains most days, because Nora's job is still in the city and Idris's is still out of it, but Tuesdays now end with dinner instead of just a nod, and neither of them has ever quite gotten over the specific luck of a year spent almost missing each other on purpose."
+    ],
+    "tags": [
+      "strangers"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "adventure",
+    "title": "The Cartographer's Mistake",
+    "time": "7 min",
+    "teaser": "A young mapmaker draws a mountain pass that isn't on any survey \u2014 and then a merchant swears he walked it home.",
+    "body": [
+      "Elin was the third-best cartographer in Verrow, which meant she got the unglamorous commissions: the flood plains, the disputed fence lines, the roads no one important used. So when she was asked to update the eastern range maps for the tax office, she expected three boring weeks and a decent fee, and for the first two and a half weeks, that is exactly what she got.",
+      "On the last afternoon, tired and half-dreaming over her instruments, she drew a pass through the Verrow Needles that did not exist. She knew it didn't exist; she had surveyed those peaks herself and they were solid granite for eleven unbroken miles. But her pen moved anyway, sketching a notch between two spires, a thin trail switch-backing down into a valley she had never seen, and she was too tired to question her own hand until it was done.",
+      "She meant to scrape it off the vellum in the morning. Instead, a wool merchant named Costa arrived at her door before breakfast, mud to his knees, asking who had told the tax office about the new shortcut through the Needles \u2014 he'd saved four days coming home, he said, through a pass with a waterfall shaped like a bent elbow and a valley full of white moths. He described the notch between the spires exactly as she had drawn it.",
+      "Elin did not tell him she had invented it the evening before. She only asked, very carefully, whether he'd mind her coming along next time \u2014 and whether he thought the pass would still be there if she looked for it herself, or whether it only existed for as long as someone needed to believe in it. Costa laughed and said he hadn't the faintest idea, and that was, he thought, the best part of the whole business."
+    ],
+    "tags": [
+      "maps"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "adventure",
+    "title": "Left Turn at Midnight",
+    "time": "6 min",
+    "teaser": "A long-haul driver picks up a hitchhiker who gives directions to a town that stopped existing thirty years ago.",
+    "body": [
+      "Cole picked up hitchhikers against every piece of advice he'd ever gotten, mostly because three in the morning on Route 9 got lonelier than any radio station could fix. The one he picked up that night was an older man in a canvas coat far too heavy for the season, who got in without much conversation and said only, when Cole asked where to, 'Aldermere. Left at the water tower.'",
+      "Cole knew Route 9 the way some men know their own hands, and he was fairly sure there hadn't been a town called Aldermere in his lifetime, water tower or not. But the man seemed certain, and it was a slow night, and Cole had learned that the fastest way through an awkward silence was to just drive, so he drove, and at the place where a water tower really did rise up out of the dark, rusted and unused, he turned left onto a road he'd genuinely never noticed before.",
+      "The road went on longer than it had any right to, past fields Cole didn't recognize despite having driven this stretch for eleven years, until it ended, unglamorously, at a gate and a chain-link fence and a faded sign that read ALDERMERE RESERVOIR \u2014 TOWN RELOCATED 1994. Cole sat with the engine idling, unsure what to say to a man who'd just directed him to a town that had been underwater for three decades.",
+      "When he turned around, the passenger seat was empty, the door still shut, the seatbelt still buckled around nothing at all. Cole didn't scream, exactly. He drove back to the water tower very carefully, obeying every speed limit sign as if the road itself were watching, and he never picked up another hitchhiker again \u2014 though for years afterward, he kept an old canvas coat folded on the passenger seat, in case anyone from Aldermere ever needed a ride back."
+    ],
+    "tags": [
+      "night drives"
+    ],
+    "image": "",
+    "status": "published"
+  },
+  {
+    "mood": "adventure",
+    "title": "The Last Ferry to Nowhere",
+    "time": "6 min",
+    "teaser": "The midnight ferry only runs when the harbor master decides the weather is right \u2014 and it never quite lands where the timetable says.",
+    "body": [
+      "Every coastal town has one boat nobody quite trusts, and in Wrenmouth it was the midnight ferry, run by an old harbor master named Silas who posted no fixed schedule, only a chalkboard that occasionally read TONIGHT and was otherwise blank for weeks at a time. Bea had lived in Wrenmouth nineteen years without ever once seeing it sail.",
+      "She boarded it, finally, the week her mother died, mostly because she needed to be somewhere that wasn't the funeral home, and Silas took her fare without a word and cast off into a fog so thick the harbor lights vanished behind them within a minute. The timetable, tacked crookedly by the wheelhouse, promised a forty-minute crossing to Dunmore Isle. They were at sea for almost three hours.",
+      "When they finally docked, it was not Dunmore Isle. It was a smaller, greener place with no name Bea could find on any chart, where an old woman on the pier took one look at her and said, gently, that the ferry only ever lands where a passenger most needs to be, whether or not that matches where they meant to go, and that Bea should sit a while before deciding whether she was ready to go back.",
+      "She sat for what felt like an hour and turned out, by the ferry's clock, to be almost a full day. She has never found that island again on any map, has never asked Silas where exactly his boat actually goes, and has instead simply started trusting the chalkboard \u2014 because the one time she needed to be somewhere other than where she was, the ferry, against every printed timetable, had known exactly where that was before she did."
+    ],
+    "tags": [
+      "the sea"
+    ],
+    "image": "",
+    "status": "published"
   }
 ];
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function splitParagraphs(text){
+  return text.split(/\n\s*\n/).map(p => p.trim().replace(/\s+/g, ' ')).filter(Boolean);
+}
+
+function genId(){
+  return 'story_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+}
+
+function withDefaults(s){
+  return {
+    id: s.id || genId(),
+    mood: s.mood,
+    title: s.title,
+    time: s.time || '5 min',
+    teaser: s.teaser,
+    body: s.body,
+    tags: Array.isArray(s.tags) ? s.tags.filter(Boolean) : [],
+    image: s.image || '',
+    status: s.status === 'draft' ? 'draft' : 'published'
+  };
+}
+
+// Lightweight markdown for story content: **bold**, *italic*, `code`.
+// Escapes HTML first, so this is safe to use with user-entered text.
+function renderInline(text){
+  let out = escapeHtml(text);
+  out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  return out;
+}
+
+/* ---------- storage: Claude.ai's window.storage when available, else localStorage ---------- */
+const WORKING_KEY = 'firelight-stories-working';
+const hasCloudStorage = typeof window.storage !== 'undefined';
+
+async function storageGet(key){
+  if (hasCloudStorage){
+    try{
+      const res = await window.storage.get(key, false);
+      if (res && res.value) return res.value;
+    }catch(e){ /* fall through to localStorage */ }
+  }
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
+
+async function storageSet(key, value){
+  let ok = false;
+  if (hasCloudStorage){
+    try{ await window.storage.set(key, value, false); ok = true; }catch(e){ /* ignore */ }
+  }
+  try{ localStorage.setItem(key, value); ok = true; }catch(e){ /* ignore */ }
+  return ok;
+}
+
+/* ---------- stories.json: the published version, shipped to every visitor ---------- */
+async function fetchPublishedStories(){
+  try{
+    const res = await fetch('stories.json', { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data) ? data.map(withDefaults) : null;
+  }catch(e){
+    return null; // opened via file://, no server, or stories.json missing — that's fine
+  }
+}
+
+/* ---------- the working copy: your local edits, layered over the published version ---------- */
+async function loadWorkingStories(){
+  const raw = await storageGet(WORKING_KEY);
+  if (raw){
+    try{
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) return parsed.map(withDefaults);
+    }catch(e){ /* fall through */ }
+  }
+  const published = await fetchPublishedStories();
+  if (published && published.length) return published;
+  return FALLBACK_STORIES.map(withDefaults);
+}
+
+async function saveWorkingStories(list){
+  return storageSet(WORKING_KEY, JSON.stringify(list));
+}
+
+function buildShelves(stories){
+  return Object.keys(MOODS).map(mood => ({
+    mood,
+    label: MOODS[mood].label,
+    desc: MOODS[mood].desc,
+    stories: stories.filter(s => s.mood === mood)
+  }));
+}
+
+if (document.body.dataset.page === 'site'){
 
 const shelvesContainer = document.getElementById('shelves');
-const allStories = [];
+let allStories = [];
+let currentShelves = [];
 
-shelves.forEach(shelf => {
-  const section = document.createElement('div');
-  section.className = 'shelf-section';
-  section.id = 'shelf-' + shelf.mood;
+function renderShelves(){
+  shelvesContainer.innerHTML = '';
+  allStories = [];
 
-  const labelHtml = `
-    <div class="shelf-label">
-      <div class="name-group">
-        <h3>${shelf.label}</h3>
-        <span class="shelf-desc">${shelf.desc}</span>
-      </div>
-      <span class="shelf-count">${shelf.stories.length} tales</span>
-    </div>
-  `;
+  currentShelves.forEach(shelf => {
+    const section = document.createElement('div');
+    section.className = 'shelf-section';
+    section.id = 'shelf-' + shelf.mood;
 
-  const rowEl = document.createElement('div');
-  rowEl.className = 'shelf-row';
-
-  shelf.stories.forEach(s => {
-    const globalIdx = allStories.length;
-    allStories.push({ ...s, mood: shelf.mood });
-
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.setAttribute('tabindex', '0');
-    card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', 'Read ' + s.title);
-    card.innerHTML = `
-      <div class="card-top">
-        <span class="mood-tag">${shelf.mood}</span>
-        <span class="read-time">⏱ ${s.time}</span>
-      </div>
-      <h3>${s.title}</h3>
-      <p class="teaser">${s.teaser}</p>
-      <div class="card-bottom">
-        <span class="seal"></span>
-        <span class="read-link">Read story →</span>
+    const labelHtml = `
+      <div class="shelf-label">
+        <div class="name-group">
+          <h3>${shelf.label}</h3>
+          <span class="shelf-desc">${shelf.desc}</span>
+        </div>
+        <span class="shelf-count">${shelf.stories.length} tales</span>
       </div>
     `;
-    card.addEventListener('click', () => openStory(globalIdx));
-    card.addEventListener('keypress', (e) => { if (e.key === 'Enter') openStory(globalIdx); });
-    rowEl.appendChild(card);
+
+    const rowEl = document.createElement('div');
+    rowEl.className = 'shelf-row';
+
+    shelf.stories.forEach(s => {
+      const globalIdx = allStories.length;
+      allStories.push({ ...s, mood: shelf.mood });
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', 'Read ' + s.title);
+      card.dataset.mood = shelf.mood;
+      card.dataset.tags = (s.tags || []).join('|').toLowerCase();
+      card.dataset.search = (s.title + ' ' + s.teaser + ' ' + (s.tags || []).join(' ')).toLowerCase();
+      card.innerHTML = `
+        <div class="card-top">
+          <span class="mood-tag">${shelf.mood}</span>
+          <span class="read-time">⏱ ${escapeHtml(s.time)}</span>
+        </div>
+        <h3>${escapeHtml(s.title)}</h3>
+        <p class="teaser">${escapeHtml(s.teaser)}</p>
+        <div class="card-bottom">
+          <span class="seal"></span>
+          <span class="read-link">Read story →</span>
+        </div>
+      `;
+      card.addEventListener('click', () => openStory(globalIdx));
+      card.addEventListener('keypress', (e) => { if (e.key === 'Enter') openStory(globalIdx); });
+      rowEl.appendChild(card);
+    });
+
+    section.innerHTML = labelHtml;
+    section.appendChild(rowEl);
+
+    const plank = document.createElement('div');
+    plank.className = 'plank';
+    section.appendChild(plank);
+
+    shelvesContainer.appendChild(section);
   });
-
-  section.innerHTML = labelHtml;
-  section.appendChild(rowEl);
-
-  const plank = document.createElement('div');
-  plank.className = 'plank';
-  section.appendChild(plank);
-
-  shelvesContainer.appendChild(section);
-});
+}
 
 document.getElementById('shuffle').addEventListener('click', () => {
   const i = Math.floor(Math.random() * allStories.length);
@@ -1082,7 +1529,7 @@ function openStory(idx){
   modalTitle.textContent = s.title;
   modalMeta.textContent = s.time + ' read';
   modalMood.textContent = (moodIcon[s.mood] || '') + '  ' + s.mood;
-  modalBody.innerHTML = s.body.map(p => `<p>${p}</p>`).join('');
+  modalBody.innerHTML = s.body.map(p => `<p>${renderInline(p)}</p>`).join('');
   fontSize = 1.08;
   modalBody.style.fontSize = fontSize + 'rem';
 
@@ -1135,6 +1582,318 @@ window.addEventListener('mousemove', (e) => {
   const y = (e.clientY / window.innerHeight) * 100;
   lantern.style.background = `radial-gradient(480px circle at ${x}% ${y}%, rgba(224,112,63,0.14), transparent 70%)`;
 });
+
+function buildTagRail(visible){
+  const rail = document.getElementById('tag-rail');
+  const tagSet = new Set();
+  visible.forEach(s => (s.tags || []).forEach(t => tagSet.add(t)));
+  const tags = Array.from(tagSet).sort();
+
+  let active = null;
+  const chips = ['All', ...tags].map(t => {
+    const isAll = t === 'All';
+    return `<button class="tag-chip${isAll ? ' active' : ''}" data-tag="${isAll ? '' : escapeHtml(t)}">${isAll ? 'All' : escapeHtml(t)}</button>`;
+  }).join('');
+  rail.innerHTML = chips;
+
+  rail.querySelectorAll('.tag-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      rail.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      active = chip.dataset.tag || null;
+      applyFilters(searchInputEl.value.trim().toLowerCase(), active);
+    });
+  });
+}
+
+function applyFilters(query, activeTag){
+  let visibleCount = 0;
+  document.querySelectorAll('.shelf-section').forEach(section => {
+    let sectionHasVisible = false;
+    section.querySelectorAll('.card').forEach(card => {
+      const matchesQuery = !query || card.dataset.search.includes(query);
+      const matchesTag = !activeTag || card.dataset.tags.split('|').includes(activeTag.toLowerCase());
+      const show = matchesQuery && matchesTag;
+      card.classList.toggle('is-hidden', !show);
+      if (show){ sectionHasVisible = true; visibleCount++; }
+    });
+    section.classList.toggle('is-hidden', !sectionHasVisible);
+  });
+  const countEl = document.getElementById('archive-count');
+  if (countEl) countEl.textContent = (query || activeTag) ? visibleCount + ' matching' : '';
+}
+
+const searchInputEl = document.getElementById('search-input');
+searchInputEl.addEventListener('input', () => {
+  const activeChip = document.querySelector('.tag-chip.active');
+  const activeTag = activeChip ? (activeChip.dataset.tag || null) : null;
+  applyFilters(searchInputEl.value.trim().toLowerCase(), activeTag);
+});
+
+function renderFeatured(visible){
+  const wrap = document.getElementById('featured-wrap');
+  const withImage = visible.filter(s => s.image);
+  const pick = withImage.length ? withImage[Math.floor(Math.random() * withImage.length)]
+             : (visible.length ? visible[Math.floor(Math.random() * visible.length)] : null);
+  if (!pick){ wrap.style.display = 'none'; return; }
+
+  const imageEl = document.getElementById('hero-image');
+  if (pick.image){
+    imageEl.style.display = '';
+    imageEl.style.backgroundImage = `url("${pick.image.replace(/"/g, '')}")`;
+  } else {
+    imageEl.style.display = 'none';
+  }
+
+  const accent = (MOODS[pick.mood] || {}).accent || 'var(--ember)';
+  document.getElementById('hero-featured').innerHTML = `
+    <div class="featured-eyebrow" style="color:${accent}">Featured tonight · ${pick.mood}</div>
+    <h3>${escapeHtml(pick.title)}</h3>
+    <p>${escapeHtml(pick.teaser)}</p>
+    <button class="cta" id="featured-read-btn">Read this tale →</button>
+  `;
+  wrap.style.display = '';
+  const idx = allStories.findIndex(s => s.title === pick.title && s.mood === pick.mood);
+  document.getElementById('featured-read-btn').addEventListener('click', () => {
+    if (idx !== -1) openStory(idx);
+  });
+}
+
+(async function initSite(){
+  const stories = await loadWorkingStories();
+  const visible = stories.filter(s => s.status !== 'draft');
+  currentShelves = buildShelves(visible);
+  renderShelves();
+  buildTagRail(visible);
+  renderFeatured(visible);
+})();
+
+}
+if (document.body.dataset.page === 'admin'){
+
+const DEMO_PASSWORD = 'firelight';
+const AUTH_KEY = 'firelight-admin-auth';
+
+const loginScreen = document.getElementById('login-screen');
+const loginForm = document.getElementById('login-form');
+const loginPassword = document.getElementById('login-password');
+const loginError = document.getElementById('login-error');
+const adminMain = document.getElementById('admin-main');
+const statRow = document.getElementById('stat-row');
+const postList = document.getElementById('admin-post-list');
+const postForm = document.getElementById('post-form');
+const formHeading = document.getElementById('form-heading');
+const submitBtn = document.getElementById('submit-btn');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
+const toastEl = document.getElementById('toast');
+
+const fTitle = document.getElementById('post-title');
+const fExcerpt = document.getElementById('post-excerpt');
+const fContent = document.getElementById('post-content');
+const fImage = document.getElementById('post-image');
+const fTags = document.getElementById('post-tags');
+const fMood = document.getElementById('post-mood');
+const fTime = document.getElementById('post-time');
+const fStatus = document.getElementById('post-status');
+
+let stories = [];
+let editingId = null;
+let toastTimer = null;
+
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+}
+
+/* ---------- login gate (demo only — client-side, not real security) ---------- */
+function showAdmin(){
+  loginScreen.style.display = 'none';
+  adminMain.style.display = '';
+  boot();
+}
+function showLogin(){
+  adminMain.style.display = 'none';
+  loginScreen.style.display = 'flex';
+  loginPassword.value = '';
+  loginError.textContent = '';
+}
+
+if (sessionStorage.getItem(AUTH_KEY) === '1'){
+  showAdmin();
+} else {
+  showLogin();
+}
+
+loginForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (loginPassword.value === DEMO_PASSWORD){
+    sessionStorage.setItem(AUTH_KEY, '1');
+    showAdmin();
+  } else {
+    loginError.textContent = 'Wrong password — try again.';
+  }
+});
+
+document.getElementById('logout-btn').addEventListener('click', (e) => {
+  e.preventDefault();
+  sessionStorage.removeItem(AUTH_KEY);
+  showLogin();
+});
+
+/* ---------- stats ---------- */
+function renderStats(){
+  const published = stories.filter(s => s.status === 'published').length;
+  const drafts = stories.filter(s => s.status === 'draft').length;
+  statRow.innerHTML = `
+    <div class="stat-pill"><strong>${stories.length}</strong>&nbsp;total</div>
+    <div class="stat-pill"><strong>${published}</strong>&nbsp;published</div>
+    <div class="stat-pill"><strong>${drafts}</strong>&nbsp;drafts</div>
+    <div class="stat-pill"><strong>5</strong>&nbsp;shelves</div>
+  `;
+}
+
+/* ---------- entries list ---------- */
+function renderList(){
+  if (!stories.length){
+    postList.innerHTML = '<div class="admin-empty">No entries yet — add your first tale on the right.</div>';
+    return;
+  }
+  postList.innerHTML = stories.map(s => `
+    <div class="admin-row" data-id="${s.id}">
+      <div class="info">
+        <div class="t">${escapeHtml(s.title)}</div>
+        <div class="m" style="color:${(MOODS[s.mood] || {}).accent || '#999'}">
+          ${s.mood} · ${escapeHtml(s.time)} ·
+          <span class="status-${s.status}">${s.status}</span>
+          ${(s.tags && s.tags.length) ? ' · ' + s.tags.map(t => escapeHtml(t)).join(', ') : ''}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn edit-btn" title="Edit" data-id="${s.id}">✎</button>
+        <button class="icon-btn danger del-btn" title="Delete" data-id="${s.id}">✕</button>
+      </div>
+    </div>
+  `).join('');
+
+  postList.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => loadIntoForm(b.dataset.id)));
+  postList.querySelectorAll('.del-btn').forEach(b => b.addEventListener('click', () => deleteStory(b.dataset.id)));
+}
+
+function loadIntoForm(id){
+  const s = stories.find(x => x.id === id);
+  if (!s) return;
+  editingId = id;
+  fTitle.value = s.title;
+  fExcerpt.value = s.teaser;
+  fContent.value = s.body.join('\n\n');
+  fImage.value = s.image || '';
+  fTags.value = (s.tags || []).join(', ');
+  fMood.value = s.mood;
+  fTime.value = s.time;
+  fStatus.value = s.status;
+  formHeading.textContent = 'Edit entry';
+  submitBtn.textContent = 'Save changes';
+  cancelEditBtn.style.display = '';
+  window.scrollTo({ top: postForm.getBoundingClientRect().top + window.scrollY - 20, behavior: 'smooth' });
+}
+
+function resetForm(){
+  editingId = null;
+  postForm.reset();
+  fMood.value = 'wonder';
+  fTime.value = '5 min';
+  fStatus.value = 'published';
+  formHeading.textContent = 'New entry';
+  submitBtn.textContent = 'Save entry';
+  cancelEditBtn.style.display = 'none';
+}
+
+async function persist(){
+  await saveWorkingStories(stories);
+}
+
+async function deleteStory(id){
+  stories = stories.filter(s => s.id !== id);
+  if (editingId === id) resetForm();
+  await persist();
+  renderList();
+  renderStats();
+  showToast('Entry removed.');
+}
+
+function parseTags(raw){
+  const seen = new Set();
+  raw.split(',').map(t => t.trim()).filter(Boolean).forEach(t => seen.add(t));
+  return Array.from(seen);
+}
+
+postForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const title = fTitle.value.trim();
+  const teaser = fExcerpt.value.trim();
+  const body = splitParagraphs(fContent.value);
+  const image = fImage.value.trim();
+  const tags = parseTags(fTags.value);
+  const mood = fMood.value;
+  const time = fTime.value.trim() || '5 min';
+  const status = fStatus.value;
+
+  if (!title || !teaser || !body.length){
+    showToast('Title, excerpt, and content are all required.');
+    return;
+  }
+
+  if (editingId){
+    const s = stories.find(x => x.id === editingId);
+    Object.assign(s, { title, teaser, body, image, tags, mood, time, status });
+    showToast('Changes saved.');
+  } else {
+    stories.push({ id: genId(), title, teaser, body, image, tags, mood, time, status });
+    showToast('Entry added to the ' + MOODS[mood].label + ' shelf.');
+  }
+
+  await persist();
+  resetForm();
+  renderList();
+  renderStats();
+});
+
+cancelEditBtn.addEventListener('click', resetForm);
+document.getElementById('new-post-btn').addEventListener('click', () => { resetForm(); fTitle.focus(); });
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  const payload = stories.map(({ mood, title, time, teaser, body, image, tags, status }) => ({ mood, title, time, teaser, body, image, tags, status }));
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'stories.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Downloaded stories.json — replace the file in your project folder to publish.');
+});
+
+document.getElementById('reset-seed-btn').addEventListener('click', async () => {
+  if (!confirm('This discards every local edit and reloads the original stories.json. Continue?')) return;
+  const published = await fetchPublishedStories();
+  stories = (published && published.length ? published : FALLBACK_STORIES.map(withDefaults));
+  await persist();
+  resetForm();
+  renderList();
+  renderStats();
+  showToast('Reset to the published demo data.');
+});
+
+async function boot(){
+  stories = await loadWorkingStories();
+  resetForm();
+  renderList();
+  renderStats();
+}
+
+}
+
 </script>
 </body>
 </html>
