@@ -1225,7 +1225,7 @@ function ensureAudio(){
   try{
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     masterGain = audioCtx.createGain();
-    masterGain.gain.value = volume;
+    masterGain.gain.value = volume*5;
     masterGain.connect(audioCtx.destination);
   }catch(e){ audioCtx = null; }
 }
@@ -1378,7 +1378,7 @@ function startAmbient(mood){
 const soundToggleBtn = document.getElementById('soundToggle');
 const soundUpBtn = document.getElementById('soundUp');
 const soundDownBtn = document.getElementById('soundDown');
-let volume = 0.55;
+let volume = 0.7;
 
 function updateSoundIcon(){
   if (!soundOn || volume <= 0.001) soundToggleBtn.textContent = '🔇';
@@ -1405,14 +1405,14 @@ soundToggleBtn.addEventListener('click', () => {
 
 soundUpBtn.addEventListener('click', () => {
   ensureAudio();
-  volume = Math.min(1, volume + 0.14);
+  volume = Math.min(1, volume + 0.15);
   soundOn = true;
   applyVolume();
 });
 
 soundDownBtn.addEventListener('click', () => {
   ensureAudio();
-  volume = Math.max(0, volume - 0.14);
+  volume = Math.max(0, volume - 0.15);
   if (volume <= 0.001) soundOn = false;
   applyVolume();
 });
